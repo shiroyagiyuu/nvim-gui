@@ -24,6 +24,9 @@ public class NeovimTest {
         OutputStream out = process.getOutputStream();
         InputStream in = process.getInputStream();
 
+	Thread th = new ResponseListener(in);
+	th.start();
+
         // nvim_ui_attach(80, 24, {})
         call(
                 out,
@@ -32,73 +35,6 @@ public class NeovimTest {
                 80,
                 24
         );
-
-        // Responseを読む
-      	MessageUnpacker unpacker = MessagePack.newDefaultUnpacker(in);
-
-
-		while (unpacker.hasNext()) {
-			MessageFormat  format = unpacker.getNextFormat();
-			ValueType  vtype = format.getValueType();
-			System.out.println("type: "+vtype);
-
-			switch (vtype) {
-			case ARRAY:
-				int ary_size = unpacker.unpackArrayHeader();
-				System.out.println("array size=" + ary_size);
-				break;
-			case INTEGER:
-
-            int messageType = unpacker.unpackInt();
-
-            switch (messageType) {
-
-                // Response
-                case 1 -> {
-                    int msgid = unpacker.unpackInt();
-
-                    System.out.println(
-                            "Response id = " + msgid
-                    );
-
-                    // error
-                    var error = unpacker.unpackValue();
-                    // result
-                    var result = unpacker.unpackValue();
-
-                    System.out.println(
-                            "error  = " + error
-                    );
-                    System.out.println(
-                            "result = " + result
-                    );
-                }
-
-                // Notification
-                case 2 -> {
-                    String method =
-                            unpacker.unpackString();
-
-                    var note_args =
-                            unpacker.unpackValue();
-
-                    System.out.println(
-                            "Notification: " +
-                            method +
-                            " " +
-                            note_args
-                    );
-                }
-
-                default ->
-                    throw new IOException(
-                            "Unknown message type: " +
-                            messageType
-                    );
-            }
-			break;
-			}
-        }
     }
 
     static void call(
