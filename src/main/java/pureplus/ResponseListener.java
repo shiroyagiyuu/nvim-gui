@@ -8,11 +8,12 @@ import org.msgpack.core.MessageFormat;
 import org.msgpack.value.ValueType;
 
 import java.io.*;
-import java.util.Map;
+import java.util.HashMap;
 
 public class ResponseListener extends Thread
 {
-    MessageUnpacker unpacker;
+    private MessageUnpacker unpacker;
+    private NvimDrawEventListener  dlistener;
 
     public ResponseListener(InputStream in) {
         unpacker = MessagePack.newDefaultUnpacker(in);
@@ -21,7 +22,7 @@ public class ResponseListener extends Thread
     public void run() {
         int ary_size = 0;
 
-		try {
+        try {
             // Responseを読む
             while (unpacker.hasNext()) {
                 ValueType  vtype = getNextType(unpacker);
@@ -35,13 +36,16 @@ public class ResponseListener extends Thread
                     parseMessage(ary_size, unpacker);
                     break;
                 default:
-                    System.out.println("unknown type: "+vtype);
-                    break;
+            		throw new IOException( "Unexpected type: " + vtype);
                 }
             }
         } catch(IOException ex) {
             ex.printStackTrace();
         }
+    }
+
+    public void setDrawEventListener(NvimDrawEventListener l) {
+        dlistener = l;
     }
 
     private ValueType getNextType(MessageUnpacker unpacker) throws IOException {
@@ -96,15 +100,66 @@ public class ResponseListener extends Thread
 
     private void parseNotifycation(int size, MessageUnpacker unpacker) throws IOException {
         String method = unpacker.unpackString();
- 
-        ValueType  vtype = getNextType(unpacker);
-        if (vtype == ValueType.ARRAY) {
-            System.out.println( "Notification: " + method );
-            int ary_size = unpacker.unpackArrayHeader();
-            parseNotifyArgs(ary_size, unpacker);
-        } else {    
-            var note_args = unpacker.unpackValue();
-            System.out.println( "Notification: " + method + " " + note_args);
+
+        if (method.equals("redraw")) { 
+            for (int i=0; i<size-1; i++) {
+                int ary_size = unpacker.unpackArrayHeader();
+                for (int j=0; i<ary_size; i++) {
+                    int  cmd_size = unpacker.unpackArrayHeader();
+                    String cmd = unpacker.unpackString();
+                    parseDrawEvent(cmd, cmd_size, unpacker);
+                }
+            }
+        } else {
+            ValueType  vtype = getNextType(unpacker);
+            if (vtype == ValueType.ARRAY) {
+                System.out.println( "Notification: " + method );
+                int ary_size = unpacker.unpackArrayHeader();
+                parseNotifyArgs(ary_size, unpacker);
+            } else {    
+                var note_args = unpacker.unpackValue();
+                System.out.println( "Notification: " + method + " " + note_args);
+            }
+        }
+    }
+
+    private void parseDrawEvent(String cmd, int size, MessageUnpacker unpacker) throws IOException {
+        if (cmd.equals("cursor_goto")) {
+            int  row, col;
+            int  arg_size = unpacker.unpackArrayHeader();
+            
+            row = unpacker.unpackInt();
+            col = unpacker.unpackInt();
+
+            System.out.println("cursor_goto: " + row + "," + col);
+            if (dlistener != null) dlistener.cursorGoto(row, col);
+        } else if (cmd.equals("put")) {
+            StringBuilder  sb = new StringBuilder();
+            for (int i=0; i<size-1; i++) {
+                int  str_size = unpacker.unpackArrayHeader();
+                String str = unpacker.unpackString();
+                sb.append(str);
+            }
+            System.out.println("put: \"" + sb.toString() + "\"");
+            if (dlistener != null) dlistener.put(sb.toString());
+        } else if (cmd.equals("highlight_set")) {
+            int  arg_size = unpacker.unpackArrayHeader();
+            int  attr_size = unpacker.unpackMapHeader();
+            HashMap<String,Object>   attrs = new HashMap<String,Object>();
+            for (int i=0; i<attr_size; i++) {
+                String key = unpacker.unpackString();
+                Object val = unpacker.unpackValue();
+                attrs.put(key,val);
+            }
+            System.out.println("hilight_set:" + attrs.toString());
+            // if (dlistener != null) dlistener.put(sb.toString());
+        } else {
+            System.out.print( "DrawEvent: " + cmd);
+            for (int i=0; i<size-1; i++) {
+                var note_args = unpacker.unpackValue();
+			    System.out.print("," + note_args);
+            }
+            System.out.println();
         }
     }
 }
