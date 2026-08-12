@@ -20,6 +20,7 @@ public class NvimView extends JPanel implements NvimDrawEventListener
         cellSize = null;
 
         setFocusable(true);
+        setFocusTraversalKeysEnabled(false);
 	}
 
     private void calcPrefSize(Graphics g) {

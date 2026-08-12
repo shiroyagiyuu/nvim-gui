@@ -11,6 +11,7 @@ public class NvimKeyAdapter implements KeyListener
         String  keycode = null;
         char    keychar = evt.getKeyChar();
 
+        //System.out.println("keyTyped");
         switch (keychar) {
         case '<':
             keycode = "<lt>"; break;
@@ -33,26 +34,20 @@ public class NvimKeyAdapter implements KeyListener
     public void keyReleased(KeyEvent evt) {
         String  keycode = null;
 
-        if ((evt.getModifiersEx() & KeyEvent.CTRL_DOWN_MASK) != 0) {
-            switch (evt.getKeyCode()) {
-            case KeyEvent.VK_A:
-                keycode = "C-A"; break;
-            }
-        } else {
-            switch (evt.getKeyCode()) {
-            case KeyEvent.VK_UP:
-                keycode = "<Up>"; break;
-            case KeyEvent.VK_DOWN:
-                keycode = "<Down>"; break;
-            case KeyEvent.VK_LEFT:
-                keycode = "<Down>"; break;
-            case KeyEvent.VK_RIGHT:
-                keycode = "<Down>"; break;
-            default:
-	             //not use
-                keycode = null;
-                break;
-            }
+        //System.out.println("keyReleased: "+evt.getKeyCode());
+        switch (evt.getKeyCode()) {
+        case KeyEvent.VK_UP:
+            keycode = "<Up>"; break;
+        case KeyEvent.VK_DOWN:
+            keycode = "<Down>"; break;
+        case KeyEvent.VK_LEFT:
+            keycode = "<Down>"; break;
+        case KeyEvent.VK_RIGHT:
+            keycode = "<Down>"; break;
+        default:
+	        //not use
+            keycode = null;
+            break;
         }
 
         if (keycode!=null) {
