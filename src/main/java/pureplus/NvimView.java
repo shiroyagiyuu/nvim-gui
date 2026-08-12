@@ -60,45 +60,55 @@ public class NvimView extends JPanel implements NvimDrawEventListener
                          ex.printStackTrace();
                      }
                 }
+                //redrawFrame();
             }
         });
+    }
+
+    private void paintCell(Graphics g, NvimDrawModel.Cell cell, Rectangle cellBounds) {
+        int str_y = cellBounds.y + ascent;
+
+        NvimDrawModel.Hilight  hl = model.getHilight(cell.getHilight());
+        if (hl != null) {
+            g.setColor(hl.getBackground());
+            g.fillRect(cellBounds.x, cellBounds.y, cellBounds.width, cellBounds.height);
+
+            g.setFont(hl.getFont());
+            g.setColor(hl.getForeground());
+        } else {
+            g.setColor(Color.white);
+            g.fillRect(cellBounds.x, cellBounds.y, cellBounds.width, cellBounds.height);
+            g.setColor(Color.black);
+        }
+        g.drawString(cell.getText(), cellBounds.x, str_y);
     }
 
     @Override
     public void paint(Graphics g) {
         if (cellSize==null || !resize_completed) { calcPrefSize(g); }
-        Rectangle  cellrect = new Rectangle(0, 0, cellSize.width, cellSize.height);
+        Rectangle  cellBounds = new Rectangle(0, 0, cellSize.width, cellSize.height);
         Dimension  gsize = model.getSize();
-        
-        for (int row = 0; row < gsize.height; row++) {
-            cellrect.y = row * cellrect.height;
-            for (int col = 0; col < gsize.width; col++) {
-                NvimDrawModel.Cell  cell = model.getCell(row,col);
-                if (cell == null) continue;
-                NvimDrawModel.Hilight  hl = model.getHilight(cell.getHilight());
-                cellrect.x = col * cellrect.width;
-                int str_y = cellrect.y+ascent;
-                
-                if (hl != null) {
-                    g.setColor(hl.getBackground());
-                    g.fillRect(cellrect.x, cellrect.y, cellrect.width, cellrect.height);
 
-                    g.setFont(hl.getFont());
-                    g.setColor(hl.getForeground());
-                } else {
-                    g.setColor(Color.white);
-                    g.fillRect(cellrect.x, cellrect.y, cellrect.width, cellrect.height);
-                    g.setColor(Color.black);
+        g.setColor(model.background);
+        Rectangle   clip = g.getClipBounds();
+        g.fillRect(clip.x, clip.y, clip.width, clip.height);
+
+        for (int row = 0; row < gsize.height; row++) {
+            cellBounds.y = row * cellBounds.height;
+            for (int col = 0; col < gsize.width; col++) {
+                cellBounds.x = col * cellBounds.width;
+                NvimDrawModel.Cell  cell = model.getCell(row,col);
+                if (cell != null) {
+                    paintCell(g, cell, cellBounds);
                 }
-                g.drawString(cell.getText(), cellrect.x, str_y);
             }
         }
 
         NvimDrawModel.Cursor  cursor = model.getCursor();
-        cellrect.x = cursor.getColumn() * cellrect.width;
-        cellrect.y = cursor.getRow() * cellrect.height;
+        cellBounds.x = cursor.getColumn() * cellBounds.width;
+        cellBounds.y = cursor.getRow() * cellBounds.height;
         g.setXORMode(Color.black);
-        g.fillRect(cellrect.x, cellrect.y, cellrect.width, cellrect.height);
+        g.fillRect(cellBounds.x, cellBounds.y, cellBounds.width, cellBounds.height);
     }
 
     public void drawEventOccurred(int event) {

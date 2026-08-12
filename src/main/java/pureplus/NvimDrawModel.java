@@ -143,7 +143,12 @@ public class NvimDrawModel
     }
 
     public Cell getCell(int row, int col) {
-        return cells[row][col];
+        if (0<=row && row<cells.length &&
+            0<=col && col<cells[0].length) {
+            return cells[row][col];
+        } else {
+            return null;
+        }
     }
 
     public void setDefaultColor(int fgcolor, int bgcolor, int spcolor) {
