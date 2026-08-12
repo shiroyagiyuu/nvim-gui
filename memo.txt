@@ -3,3 +3,5 @@ https://javadoc.io/doc/org.msgpack/msgpack-core/latest/index.html
 
 neovim
 https://neovim.io/doc/user/api/#_connecting
+
+https://neovim.io/doc/user/api-ui-events/
