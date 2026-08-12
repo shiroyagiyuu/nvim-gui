@@ -41,6 +41,9 @@ public class NeovimTest {
         api.uiAttach(80,24);
 
         view.redrawFrame();
+
+        int result = process.waitFor();
+        System.exit(result);
     }
 }
 
