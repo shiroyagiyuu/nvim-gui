@@ -175,7 +175,8 @@ public class NvimReceiveThread extends Thread
                 System.out.println("end Grid: wrap="+wrap);
                 //dlistener.endGridLine(wrap);
             }
-        } else if (cmd.equals("hl_attr_define")) {
+        }
+        else if (cmd.equals("hl_attr_define")) {
             System.out.println("hl_attr");
             for (int i=0; i<size-1; i++) {
                 int attr_size = unpacker.unpackArrayHeader();
@@ -205,7 +206,21 @@ public class NvimReceiveThread extends Thread
                 Object cattr = unpacker.unpackValue();	//nouse
                 Object info = unpacker.unpackValue();   //nouse
             }
-        } else {
+        }
+        else if (cmd.equals("default_colors_set")) {
+            int cmd_size = unpacker.unpackArrayHeader();
+            int fgcolor = unpacker.unpackInt();
+            int bgcolor = unpacker.unpackInt();
+            int spcolor = unpacker.unpackInt();
+            int ctermfg = unpacker.unpackInt(); //nouse
+            int ctermbg = unpacker.unpackInt(); //nouse
+            
+            dmodel.setDefaultColor(fgcolor, bgcolor, spcolor);
+        }
+        else if (cmd.equals("flush")) {
+            dmodel.flush();
+        }
+        else {
             System.out.print( "DrawEvent: " + cmd);
             for (int i=0; i<size-1; i++) {
                 var note_args = unpacker.unpackValue();

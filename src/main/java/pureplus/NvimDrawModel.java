@@ -3,6 +3,7 @@ package pureplus;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Color;
+import java.util.ArrayList;
 
 public class NvimDrawModel
 {
@@ -34,11 +35,13 @@ public class NvimDrawModel
         private Font   font;
         private Color  foreground;
         private Color  background;
+        private Color  special_color;
 
-        public Hilight(Font font, Color fg, Color bg) {
+        public Hilight(Font font, Color fg, Color bg, Color sp) {
             this.font = font;
             this.foreground = fg;
             this.background = bg;
+            this.special_color = sp;
         }
 
         public Font getFont() {
@@ -80,6 +83,9 @@ public class NvimDrawModel
 
     Cell[][]  cells;
     Hilight[] hilights;
+    Color     foreground,background,special_color;
+
+    ArrayList<NvimDrawEventListener>  drawlisteners;
 
     public void setSize(int cols, int rows) {
         Cell[][]  bkcells=cells;
@@ -111,10 +117,21 @@ public class NvimDrawModel
         return cells[row][col];
     }
 
-    public Hilight getDefaultHilight() {
-        return new Hilight(new Font("Monospaced", Font.PLAIN, 12), Color.black, Color.white);
+    public void setDefaultColor(int fgcolor, int bgcolor, int spcolor) {
+        this.foreground = new Color(fgcolor);
+        this.background = new Color(bgcolor);
+        this.special_color = new Color(spcolor);
     }
 
+    public Hilight getDefaultHilight() {
+        return new Hilight(new Font("Monospaced", Font.PLAIN, 12), foreground, background, special_color);
+    }
+
+    /**
+     * ハイライトを設定します
+     * @param id 設定するハイライトのid
+     * @param hl 設定するハイライト
+     */
     public void setHilight(int id, Hilight hl) {
         if (hilights == null || id >= hilights.length) {
              int newlen = ((id/32)+1)*32;
@@ -123,13 +140,48 @@ public class NvimDrawModel
 
         hilights[id] = hl;
     }
-
+    
+    /**
+     * ハイライトを取得します
+     * @param id 取得するハイライトのid
+     */
     public Hilight getHilight(int id) {
+        if (hilights[id] == null) {
+            hilights[id] = getDefaultHilight();
+        }
         return hilights[id];
+    }
+
+    /**
+     * DrawEventListenerを登録します
+     * @param l 登録するリスナ
+     */
+    public void addDrawEventListener(NvimDrawEventListener l) {
+        if (!drawlisteners.contains(l)) {
+            drawlisteners.add(l);
+        }
+    }
+
+    /**
+     * DrawEventを発生させます
+     * @param event 発生させるイベントのタイプ
+     */
+    public void fireDrawEvent(int event) {
+        for (NvimDrawEventListener l : drawlisteners) {
+            l.drawEventOccurred(event);
+        }
+    }
+
+    /**
+     * nvimのflushコマンドを受け付けます
+     */
+    public void flush() {
+        fireDrawEvent(0);
     }
 
     public NvimDrawModel() {
         this.hilights = new Hilight[32];
+        this.drawlisteners = new ArrayList<NvimDrawEventListener>();
     }
 }
 

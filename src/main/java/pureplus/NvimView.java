@@ -8,7 +8,7 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Color;
 
-public class NvimView extends JPanel
+public class NvimView extends JPanel implements NvimDrawEventListener
 {
     NvimDrawModel  model;
     Dimension      cellSize;
@@ -61,6 +61,10 @@ public class NvimView extends JPanel
                 g.drawString(cell.getText(), cellrect.x, str_y);
             }
         }
+    }
+
+    public void drawEventOccurred(int event) {
+        frm.pack();
     }
 
     JFrame  frm;

@@ -28,6 +28,7 @@ public class NeovimTest {
         model.setSize(80,24);
 
         NvimView   view = new NvimView(model);
+        model.addDrawEventListener(view);
         view.createFrame();
 
 	    NvimReceiveThread th = new NvimReceiveThread(in);
