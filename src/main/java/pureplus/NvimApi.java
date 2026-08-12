@@ -49,4 +49,33 @@ public class NvimApi
 
         return msgid;
     }
+
+    public void input(String keycode) throws IOException {
+        this.msgid++;
+
+        MessagePacker packer = MessagePack.newDefaultPacker(out);
+
+        // [0, msgid, method, params]
+        packer.packArrayHeader(4);
+
+        // REQUEST
+        packer.packInt(0);
+
+        // msgid
+        packer.packInt(msgid);
+        
+        // method
+        packer.packString("nvim_input");
+
+        // params = [keys]
+        packer.packArrayHeader(1);
+
+        // {}
+        //packer.packMapHeader(1);
+        packer.packString(keycode);
+
+        packer.flush();
+
+        System.out.println("Call input");
+    }
 }

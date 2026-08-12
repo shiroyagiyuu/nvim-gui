@@ -18,6 +18,8 @@ public class NvimView extends JPanel implements NvimDrawEventListener
         this.model = model;
         setFont(new Font("Monospaced", Font.PLAIN, 12));
         cellSize = null;
+
+        setFocusable(true);
 	}
 
     private void calcPrefSize(Graphics g) {
@@ -64,7 +66,8 @@ public class NvimView extends JPanel implements NvimDrawEventListener
     }
 
     public void drawEventOccurred(int event) {
-        frm.pack();
+        repaint();
+        //frm.pack();
     }
 
     JFrame  frm;
@@ -82,6 +85,7 @@ public class NvimView extends JPanel implements NvimDrawEventListener
 
     public void redrawFrame() {
         frm.pack();
+        requestFocusInWindow();
     }
 }
 
