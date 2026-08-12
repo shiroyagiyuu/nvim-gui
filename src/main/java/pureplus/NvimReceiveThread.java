@@ -9,12 +9,12 @@ import org.msgpack.value.ValueType;
 import java.io.*;
 import java.util.HashMap;
 
-public class ResponseListener extends Thread
+public class NvimReceiveThread extends Thread
 {
     private MessageUnpacker unpacker;
     private NvimDrawModel   dmodel;
 
-    public ResponseListener(InputStream in) {
+    public NvimReceiveThread(InputStream in) {
         unpacker = MessagePack.newDefaultUnpacker(in);
     }
 
