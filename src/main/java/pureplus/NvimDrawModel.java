@@ -199,8 +199,32 @@ public class NvimDrawModel
         return cursor;
     }
 
+    /**
+     * modeを設定します
+     * @param mode 設定先のモード
+     */
     public void setMode(int mode) {
         this.mode = mode;
+    }
+
+    /**
+     * scrollします
+     */
+    public void scroll(int top, int bottom, int left, int right, int rowoff, int coloff) {
+        System.out.println("scroll top:"+top+" bottom:"+bottom+" row:"+rowoff);
+        Cell[][]  new_cells = new Cell[cells.length][cells[0].length];
+        for (int row = 0; row<new_cells.length; row++) {
+            for (int col = 0; col<new_cells[0].length; col++) {
+                if ((top-rowoff)<=row && row<(bottom-rowoff) &&
+                    (left-coloff)<=col && col<(right-coloff)) {
+                    new_cells[row][col] = cells[row+rowoff][col+coloff];
+                } else {
+                    new_cells[row][col] = new Cell();
+                }
+            }
+        }
+
+        this.cells = new_cells;
     }
 
     /**

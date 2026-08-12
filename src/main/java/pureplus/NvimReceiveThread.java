@@ -208,6 +208,18 @@ public class NvimReceiveThread extends Thread
 
             dmodel.setCursor(grid, row, col);
         }
+        else if (cmd.equals("grid_scroll")) {
+            int param_size = unpacker.unpackArrayHeader();
+            int grid  = unpacker.unpackInt();
+            int top   = unpacker.unpackInt();
+            int bot   = unpacker.unpackInt();
+            int left  = unpacker.unpackInt();
+            int right = unpacker.unpackInt();
+            int rows  = unpacker.unpackInt();
+            int cols  = unpacker.unpackInt();
+
+            dmodel.scroll(top, bot, left, right, rows, cols);
+        }
         else if (cmd.equals("flush")) {
             dmodel.flush();
         }
