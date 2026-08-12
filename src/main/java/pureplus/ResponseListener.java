@@ -1,4 +1,3 @@
-
 package pureplus;
 
 import org.msgpack.core.MessagePack;
@@ -13,7 +12,7 @@ import java.util.HashMap;
 public class ResponseListener extends Thread
 {
     private MessageUnpacker unpacker;
-    private NvimDrawEventListener  dlistener;
+    private NvimDrawModel   dmodel;
 
     public ResponseListener(InputStream in) {
         unpacker = MessagePack.newDefaultUnpacker(in);
@@ -44,8 +43,8 @@ public class ResponseListener extends Thread
         }
     }
 
-    public void setDrawEventListener(NvimDrawEventListener l) {
-        dlistener = l;
+    public void setDrawModel(NvimDrawModel model) {
+        dmodel = model;
     }
 
     private ValueType getNextType(MessageUnpacker unpacker) throws IOException {
@@ -123,7 +122,69 @@ public class ResponseListener extends Thread
         }
     }
 
+    private String parseArrayString(int size) throws IOException {
+        StringBuilder  sb = new StringBuilder();
+        for (int i=0; i<size; i++) {
+            int  str_size = unpacker.unpackArrayHeader();
+            String str = unpacker.unpackString();
+            sb.append(str);
+        }
+        return sb.toString();
+    }
+
+    private String parseArrayString() throws IOException {
+        int  ary_size = unpacker.unpackArrayHeader();
+        return parseArrayString(ary_size);
+    }
+
+    private void parseCell(int row, int col, MessageUnpacker unpacker) throws IOException {
+        int  ary_size = unpacker.unpackArrayHeader();
+        for (int i=0; i<ary_size; i++) {
+            int cell_size = unpacker.unpackArrayHeader();
+            String text = unpacker.unpackString();
+            int hl_id=0;
+            int repeat=1;
+            if (cell_size>1) {
+                hl_id = unpacker.unpackInt();
+                if (cell_size>2) {
+                    repeat = unpacker.unpackInt();
+                }
+            }
+            System.out.println("cell: text=\""+text+"\" hl_id="+hl_id+" rep="+repeat);
+            if (text.length()>1) { System.out.println("Warning!!: long text??"); }
+            for (int ic=0; ic<repeat; ic++) {
+                dmodel.setCell(row, col+ic, text.charAt(0), hl_id);
+            }
+        }
+    }
+
     private void parseDrawEvent(String cmd, int size, MessageUnpacker unpacker) throws IOException {
+        if (cmd.equals("grid_line")) {
+            for (int i=0; i<size-1; i++) {
+                int cmd_size = unpacker.unpackArrayHeader();
+                int grid = unpacker.unpackInt();
+                int row  = unpacker.unpackInt();
+                int col  = unpacker.unpackInt();
+                System.out.println("Start Grid: grid="+grid+" row="+row+" col="+col);
+                //dlistener.startGridLine(grid, row, col);
+
+                parseCell(row, col, unpacker);
+
+                boolean wrap = unpacker.unpackBoolean();
+                System.out.println("end Grid: wrap="+wrap);
+                //dlistener.endGridLine(wrap);
+            }
+        } else {
+            System.out.print( "DrawEvent: " + cmd);
+            for (int i=0; i<size-1; i++) {
+                var note_args = unpacker.unpackValue();
+			    System.out.print("," + note_args);
+            }
+            System.out.println();
+        }
+    }
+
+    private void parseOldDrawEvent(String cmd, int size, MessageUnpacker unpacker) throws IOException {
         if (cmd.equals("cursor_goto")) {
             int  row, col;
             int  arg_size = unpacker.unpackArrayHeader();
@@ -132,7 +193,7 @@ public class ResponseListener extends Thread
             col = unpacker.unpackInt();
 
             System.out.println("cursor_goto: " + row + "," + col);
-            if (dlistener != null) dlistener.cursorGoto(row, col);
+            //if (dlistener != null) dlistener.cursorGoto(row, col);
         } else if (cmd.equals("put")) {
             StringBuilder  sb = new StringBuilder();
             for (int i=0; i<size-1; i++) {
@@ -141,7 +202,7 @@ public class ResponseListener extends Thread
                 sb.append(str);
             }
             System.out.println("put: \"" + sb.toString() + "\"");
-            if (dlistener != null) dlistener.put(sb.toString());
+            //if (dlistener != null) dlistener.put(sb.toString());
         } else if (cmd.equals("highlight_set")) {
             int  arg_size = unpacker.unpackArrayHeader();
             int  attr_size = unpacker.unpackMapHeader();

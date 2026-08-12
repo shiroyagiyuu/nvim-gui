@@ -24,7 +24,11 @@ public class NeovimTest {
         OutputStream out = process.getOutputStream();
         InputStream in = process.getInputStream();
 
-	Thread th = new ResponseListener(in);
+    NvimDrawModel   model = new NvimDrawModel();
+    model.setSize(24,80);
+
+	ResponseListener th = new ResponseListener(in);
+    th.setDrawModel(model);
 	th.start();
 
         // nvim_ui_attach(80, 24, {})
@@ -67,7 +71,9 @@ public class NeovimTest {
         packer.packInt(height);
 
         // {}
-        packer.packMapHeader(0);
+        packer.packMapHeader(1);
+        packer.packString("ext_linegrid");
+        packer.packBoolean(true);
 
         packer.flush();
     }
