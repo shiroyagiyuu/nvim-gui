@@ -191,7 +191,7 @@ public class NvimReceiveThread extends Thread
             }
         }
         else if (cmd.equals("default_colors_set")) {
-            int cmd_size = unpacker.unpackArrayHeader();
+            int param_size = unpacker.unpackArrayHeader();
             int fgcolor = unpacker.unpackInt();
             int bgcolor = unpacker.unpackInt();
             int spcolor = unpacker.unpackInt();
@@ -199,6 +199,14 @@ public class NvimReceiveThread extends Thread
             int ctermbg = unpacker.unpackInt(); //nouse
             
             dmodel.setDefaultColor(fgcolor, bgcolor, spcolor);
+        }
+        else if (cmd.equals("grid_cursor_goto")) {
+            int param_size = unpacker.unpackArrayHeader();
+            int grid = unpacker.unpackInt();
+            int row  = unpacker.unpackInt();
+            int col  = unpacker.unpackInt();
+
+            dmodel.setCursor(grid, row, col);
         }
         else if (cmd.equals("flush")) {
             dmodel.flush();

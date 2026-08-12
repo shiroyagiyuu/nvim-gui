@@ -16,6 +16,8 @@ public class NvimKeyAdapter implements KeyListener
             keycode = "<lt>"; break;
         case '>':
             keycode = "<gt>"; break;
+        case '\n':
+            keycode = "<Enter>"; break;
         default:
             keycode = String.valueOf(keychar);
             break;

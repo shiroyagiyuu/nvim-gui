@@ -7,7 +7,7 @@ import java.util.ArrayList;
 
 public class NvimDrawModel
 {
-	public class Cell
+    public class Cell
     {
         private String text;
         private int    hilight;
@@ -81,9 +81,35 @@ public class NvimDrawModel
         }
     }
 
+    public class Cursor
+    {
+        int grid,row,col;
+        int shape;
+
+        final int SHAPE_BLOCK=0;
+        final int SHAPE_HORIZONTAL=1;
+        final int SHAPE_VERTICAL=2;
+
+        public void setCursor(int grid, int row, int col) {
+            this.grid = grid;
+            this.row  = row;
+            this.col  = col;
+        }
+
+        public int getRow() {
+            return this.row;
+        }
+
+        public int getColumn() {
+            return this.col;
+        }
+    }
+
     Cell[][]  cells;
     Hilight[] hilights;
     Color     foreground,background,special_color;
+    Cursor    cursor;
+    int       mode;
 
     ArrayList<NvimDrawEventListener>  drawlisteners;
 
@@ -104,7 +130,10 @@ public class NvimDrawModel
         }
     }
 
-    /* return grid size */
+    /**
+     * return grid size 
+     * @return grid size
+     */
     public Dimension getSize() {
         return new Dimension(cells[0].length, cells.length);
     }
@@ -153,6 +182,28 @@ public class NvimDrawModel
     }
 
     /**
+     * カーソルを設定します
+     * @param grid grid
+     * @param row  row
+     * @param col  column
+     */
+    public void setCursor(int grid, int row, int col) {
+        cursor.setCursor(grid,row,col);
+    }
+
+    /**
+     * カーソルを返します
+     * @return カーソル
+     */
+    public Cursor getCursor() {
+        return cursor;
+    }
+
+    public void setMode(int mode) {
+        this.mode = mode;
+    }
+
+    /**
      * DrawEventListenerを登録します
      * @param l 登録するリスナ
      */
@@ -181,6 +232,7 @@ public class NvimDrawModel
 
     public NvimDrawModel() {
         this.hilights = new Hilight[32];
+        this.cursor = new Cursor();
         this.drawlisteners = new ArrayList<NvimDrawEventListener>();
     }
 }
