@@ -18,31 +18,6 @@ public class NvimReceiveThread extends Thread
         unpacker = MessagePack.newDefaultUnpacker(in);
     }
 
-    public void run() {
-        int ary_size = 0;
-
-        try {
-            // Responseを読む
-            while (unpacker.hasNext()) {
-                ValueType  vtype = getNextType(unpacker);
-
-                switch (vtype) {
-                case ARRAY:
-                    ary_size = unpacker.unpackArrayHeader();
-                    System.out.println("array size=" + ary_size);
-                    break;
-                case INTEGER:
-                    parseMessage(ary_size, unpacker);
-                    break;
-                default:
-            		throw new IOException( "Unexpected type: " + vtype);
-                }
-            }
-        } catch(IOException ex) {
-            ex.printStackTrace();
-        }
-    }
-
     public void setDrawModel(NvimDrawModel model) {
         dmodel = model;
     }
@@ -50,42 +25,50 @@ public class NvimReceiveThread extends Thread
     private ValueType getNextType(MessageUnpacker unpacker) throws IOException {
         MessageFormat  format = unpacker.getNextFormat();
         ValueType  vtype = format.getValueType();
-        System.out.println("type: "+vtype);
+        //System.out.println("type: "+vtype);
 
         return vtype;
     }
 
-    public void parseMessage(int size, MessageUnpacker unpacker) throws IOException {
-        int messageType = unpacker.unpackInt();
+    public void run() {
+        try {
+            // Responseを読む
+            while (unpacker.hasNext()) {
+                int msg_size = unpacker.unpackArrayHeader();
+                if (msg_size>0) {
+                    int messageType = unpacker.unpackInt();
 
-        switch (messageType) {
-        case 1:
-            // Response
-            parseResponse(size, unpacker);
-            break;
-        case 2:
-            // Notification
-            parseNotifycation(size, unpacker);
-            break;
-        default:
-            throw new IOException( "Unknown message type: " + messageType);
+                    if (messageType==1) {
+                        // Response
+                        parseResponse(msg_size, unpacker);
+                    } else if (messageType==2) {
+                        // Notification
+                        parseNotifycation(msg_size, unpacker);
+                    } else {
+            	        throw new IOException( "Unexpected message: " + messageType);
+                    }
+                }
+            }
+        } catch(IOException ex) {
+            ex.printStackTrace();
         }
     }
 
     private void parseResponse(int size, MessageUnpacker unpacker) throws IOException {
         int msgid = unpacker.unpackInt();
 
-        System.out.println("Response id = " + msgid);
-
         // error
-        getNextType(unpacker);
+        ValueType  err_type = getNextType(unpacker);
         var error = unpacker.unpackValue();
         // result
-        getNextType(unpacker);
+        ValueType  res_type = getNextType(unpacker);
         var result = unpacker.unpackValue();
 
-        System.out.println("error  = " + error);
-        System.out.println("result = " + result);
+        if (err_type != ValueType.NIL) {
+            System.out.println("Response id = " + msgid);
+            System.out.println("error  = " + error);
+            System.out.println("result = " + result);
+        }
     }
 
     private void parseNotifyArgs(int size, MessageUnpacker unpacker) throws IOException {
@@ -166,13 +149,13 @@ public class NvimReceiveThread extends Thread
                 int grid = unpacker.unpackInt();
                 int row  = unpacker.unpackInt();
                 int col  = unpacker.unpackInt();
-                System.out.println("Start Grid: grid="+grid+" row="+row+" col="+col);
+                //System.out.println("Start Grid: grid="+grid+" row="+row+" col="+col);
                 //dlistener.startGridLine(grid, row, col);
 
                 parseCell(row, col, unpacker);
 
                 boolean wrap = unpacker.unpackBoolean();
-                System.out.println("end Grid: wrap="+wrap);
+                //System.out.println("end Grid: wrap="+wrap);
                 //dlistener.endGridLine(wrap);
             }
         }

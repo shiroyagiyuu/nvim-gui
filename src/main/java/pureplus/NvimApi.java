@@ -75,7 +75,5 @@ public class NvimApi
         packer.packString(keycode);
 
         packer.flush();
-
-        System.out.println("Call input");
     }
 }
