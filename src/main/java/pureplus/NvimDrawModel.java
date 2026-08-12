@@ -114,20 +114,20 @@ public class NvimDrawModel
     ArrayList<NvimDrawEventListener>  drawlisteners;
 
     public void setSize(int cols, int rows) {
-        Cell[][]  bkcells=cells;
-
-        cells = new Cell[rows][cols];
+        Cell[][]  newcells = new Cell[rows][cols];
 
         for (int ir=0; ir<rows; ir++) {
            for (int ic=0; ic<cols; ic++) {
-                if (bkcells != null && bkcells.length > ic && bkcells[0].length > ir) {
+                if (cells != null && ir < cells.length && ic < cells[0].length) {
                     /* copy old to new */
-                	cells[ir][ic] = bkcells[ir][ic];
+                    newcells[ir][ic] = cells[ir][ic];
                 } else {
-                    cells[ir][ic] = new Cell();
+                    newcells[ir][ic] = new Cell();
                 }
             }
         }
+
+        this.cells = newcells;
     }
 
     /**

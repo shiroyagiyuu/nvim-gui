@@ -220,6 +220,14 @@ public class NvimReceiveThread extends Thread
 
             dmodel.scroll(top, bot, left, right, rows, cols);
         }
+        else if (cmd.equals("grid_resize")) {
+            int param_size = unpacker.unpackArrayHeader();
+            int grid  = unpacker.unpackInt();
+            int width = unpacker.unpackInt();
+            int height= unpacker.unpackInt();
+
+            dmodel.setSize(width, height);
+        }
         else if (cmd.equals("flush")) {
             dmodel.flush();
         }

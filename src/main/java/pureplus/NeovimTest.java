@@ -38,6 +38,7 @@ public class NeovimTest {
         NvimApi   api = new NvimApi(out); 
         NvimKeyAdapter  keyAdapter = new NvimKeyAdapter(api);
         view.addKeyListener(keyAdapter);
+        view.setApi(api);
         api.uiAttach(80,24);
 
         int result = process.waitFor();

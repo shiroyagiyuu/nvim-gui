@@ -51,6 +51,14 @@ public class NvimApi
     }
 
     public void input(String keycode) throws IOException {
+        request("nvim_input", keycode);
+    }
+
+    public void uiTryResize(int width, int height) throws IOException {
+        request("nvim_ui_try_resize", width, height);
+    }
+
+    public void request(String method, Object... params) throws IOException {
         this.msgid++;
 
         MessagePacker packer = MessagePack.newDefaultPacker(out);
@@ -65,14 +73,22 @@ public class NvimApi
         packer.packInt(msgid);
         
         // method
-        packer.packString("nvim_input");
+        packer.packString(method);
 
-        // params = [keys]
-        packer.packArrayHeader(1);
+        // params
+        packer.packArrayHeader(params.length);
 
-        // {}
-        //packer.packMapHeader(1);
-        packer.packString(keycode);
+        for (int i=0; i<params.length; i++) {
+            if (params[i] instanceof Integer) {
+                packer.packInt((int)params[i]);
+            }
+            else if (params[i] instanceof String) {
+                packer.packString((String)params[i]);
+            }
+            else {
+                System.out.println("Not Supported Now");
+            }
+        }
 
         packer.flush();
     }
