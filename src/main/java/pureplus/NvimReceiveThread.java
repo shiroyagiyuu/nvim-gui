@@ -139,10 +139,10 @@ public class NvimReceiveThread extends Thread
 
     private void parseCell(int row, int col, MessageUnpacker unpacker) throws IOException {
         int  ary_size = unpacker.unpackArrayHeader();
+        int  hl_id=-1;
         for (int i=0; i<ary_size; i++) {
             int cell_size = unpacker.unpackArrayHeader();
             String text = unpacker.unpackString();
-            int hl_id=0;
             int repeat=1;
             if (cell_size>1) {
                 hl_id = unpacker.unpackInt();
@@ -150,10 +150,11 @@ public class NvimReceiveThread extends Thread
                     repeat = unpacker.unpackInt();
                 }
             }
-            System.out.println("cell: text=\""+text+"\" hl_id="+hl_id+" rep="+repeat);
+            //System.out.println("cell: text=\""+text+"\" hl_id="+hl_id+" rep="+repeat);
             if (text.length()>1) { System.out.println("Warning!!: long text??"); }
             for (int ic=0; ic<repeat; ic++) {
-                dmodel.setCell(row, col+ic, text.charAt(0), hl_id);
+                dmodel.setCell(row, col, text, hl_id);
+                col++;
             }
         }
     }
@@ -173,6 +174,36 @@ public class NvimReceiveThread extends Thread
                 boolean wrap = unpacker.unpackBoolean();
                 System.out.println("end Grid: wrap="+wrap);
                 //dlistener.endGridLine(wrap);
+            }
+        } else if (cmd.equals("hl_attr_define")) {
+            System.out.println("hl_attr");
+            for (int i=0; i<size-1; i++) {
+                int attr_size = unpacker.unpackArrayHeader();
+                int id = unpacker.unpackInt();
+                int map_size = unpacker.unpackMapHeader();
+                NvimDrawModel.Hilight hl = dmodel.getDefaultHilight();
+                for (int mi=0; mi<map_size; mi++) {
+                    String  key = unpacker.unpackString();
+                    if (key.equals("bold")) {
+                        boolean bold = unpacker.unpackBoolean();
+                        hl.setBold(bold);
+                    } else if (key.equals("italic")) {
+                        boolean italic = unpacker.unpackBoolean();
+                        hl.setItalic(italic);
+                    } else if (key.equals("foreground")) {
+                        int fgcolor = unpacker.unpackInt();
+                        hl.setForeground(fgcolor);
+                    } else if (key.equals("background")) {
+                        int bgcolor = unpacker.unpackInt();
+                        hl.setBackground(bgcolor);
+                    } else { 
+                        Object  value = unpacker.unpackValue();
+                        System.out.println("id:"+id+" key:"+key+" val:"+value);
+                    }
+                    dmodel.setHilight(id, hl);
+                }
+                Object cattr = unpacker.unpackValue();	//nouse
+                Object info = unpacker.unpackValue();   //nouse
             }
         } else {
             System.out.print( "DrawEvent: " + cmd);

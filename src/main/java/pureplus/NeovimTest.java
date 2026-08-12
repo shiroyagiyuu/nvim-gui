@@ -25,7 +25,10 @@ public class NeovimTest {
         InputStream in = process.getInputStream();
 
         NvimDrawModel   model = new NvimDrawModel();
-        model.setSize(24,80);
+        model.setSize(80,24);
+
+        NvimView   view = new NvimView(model);
+        view.createFrame();
 
 	    NvimReceiveThread th = new NvimReceiveThread(in);
         th.setDrawModel(model);
@@ -33,6 +36,8 @@ public class NeovimTest {
 
         NvimApi   api = new NvimApi(out); 
         api.uiAttach(80,24);
+
+        view.redrawFrame();
     }
 }
 
