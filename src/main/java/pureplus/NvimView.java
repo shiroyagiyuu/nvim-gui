@@ -85,6 +85,7 @@ public class NvimView extends JPanel implements NvimDrawEventListener
 
     @Override
     public void paint(Graphics g) {
+        g.setFont(getFont());
         if (cellSize==null || !resize_completed) { calcPrefSize(g); }
         Rectangle  cellBounds = new Rectangle(0, 0, cellSize.width, cellSize.height);
         Dimension  gsize = model.getSize();
