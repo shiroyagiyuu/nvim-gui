@@ -33,6 +33,8 @@ public class NvimView extends JPanel implements NvimDrawEventListener
         int  vieww = cellw * modelSize.width;
         int  viewh = cellh * modelSize.height;
         setPreferredSize(new Dimension(vieww, viewh));
+    
+        redrawFrame();    
     }
 
     @Override
@@ -67,7 +69,6 @@ public class NvimView extends JPanel implements NvimDrawEventListener
 
     public void drawEventOccurred(int event) {
         repaint();
-        //frm.pack();
     }
 
     JFrame  frm;
@@ -84,8 +85,10 @@ public class NvimView extends JPanel implements NvimDrawEventListener
     }
 
     public void redrawFrame() {
-        frm.pack();
-        requestFocusInWindow();
+        SwingUtilities.invokeLater(() -> {
+            frm.pack();
+            requestFocusInWindow();
+        });
     }
 }
 
