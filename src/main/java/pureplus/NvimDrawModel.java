@@ -233,6 +233,17 @@ public class NvimDrawModel
     }
 
     /**
+     * clear all cells
+     */
+    public void clear() {
+        for (int row=0; row<cells.length; row++) {
+            for (int col=0; col<cells[0].length; col++) {
+                cells[row][col] = null;
+            }
+        }
+    }
+
+    /**
      * DrawEventListenerを登録します
      * @param l 登録するリスナ
      */
