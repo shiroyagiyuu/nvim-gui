@@ -36,6 +36,9 @@ public class NvimDrawModel
         private Color  foreground;
         private Color  background;
         private Color  special_color;
+        private boolean reverse;
+        private boolean underline;
+        private boolean strikethrough;
 
         public Hilight(Font font, Color fg, Color bg, Color sp) {
             this.font = font;
@@ -86,6 +89,30 @@ public class NvimDrawModel
             } else {
                 this.font = font.deriveFont(Font.PLAIN);
             }
+        }
+
+        public boolean isUnderline() {
+            return this.underline;
+        }
+
+        public void setUnderline(boolean b) {
+            this.underline = b;
+        }
+
+        public boolean isStrikethrough() {
+            return this.strikethrough;
+        }
+
+        public void setStrikethrough(boolean b) {
+            this.strikethrough = b;
+        }
+
+        public boolean isReverse() {
+            return this.reverse;
+        }
+
+        public void setReverse(boolean b) {
+            this.reverse = b;
         }
     }
 
@@ -154,6 +181,22 @@ public class NvimDrawModel
         } else {
             return null;
         }
+    }
+
+    /**
+     * get default foreground color
+     * @return foreground color
+     */
+    public Color getForeground() {
+        return this.foreground;
+    }
+
+    /**
+     * get default background color
+     * @return background color
+     */
+    public Color getBackground() {
+        return this.background;
     }
 
     public void setDefaultColor(int fgcolor, int bgcolor, int spcolor) {

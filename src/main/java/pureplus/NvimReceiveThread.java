@@ -153,20 +153,32 @@ public class NvimReceiveThread extends Thread
                     } else if (key.equals("background")) {
                         int bgcolor = unpacker.unpackInt();
                         hl.setBackground(bgcolor);
+                    } else if (key.equals("special")) {
+                        int spcolor = unpacker.unpackInt();
+                        hl.setSpecialColor(spcolor);
+                    } else if (key.equals("reverse")) {
+                        boolean reverse = unpacker.unpackBoolean();
+                        hl.setReverse(reverse);
+                    } else if (key.equals("underline")) {
+                        boolean underline = unpacker.unpackBoolean();
+                        hl.setUnderline(underline);
+                    } else if (key.equals("strikethrough")) {
+                        boolean strikethrough = unpacker.unpackBoolean();
+                        hl.setStrikethrough(strikethrough);
                     } else { 
                         Object  value = unpacker.unpackValue();
                         System.out.println("id:"+id+" key:"+key+" val:"+value);
                     }
                     dmodel.setHilight(id, hl);
                 }
-                Object cattr = unpacker.unpackValue();	//nouse
-                Object info = unpacker.unpackValue();   //nouse
+                unpacker.unpackValue();	 //c_attr is nouse
+                unpacker.unpackValue();  //info is nouse
             }
         }
         case "hl_group_set" -> {
             // do nothing
             for (int i=0; i<size-1; i++) {
-                var note_args = unpacker.unpackValue();
+                unpacker.unpackValue();
             }
         }
         case "default_colors_set" -> {
@@ -174,8 +186,8 @@ public class NvimReceiveThread extends Thread
             int fgcolor = unpacker.unpackInt();
             int bgcolor = unpacker.unpackInt();
             int spcolor = unpacker.unpackInt();
-            int ctermfg = unpacker.unpackInt(); //nouse
-            int ctermbg = unpacker.unpackInt(); //nouse
+            unpacker.unpackInt(); //ctermfg is nouse
+            unpacker.unpackInt(); //ctermbg is nouse
             
             dmodel.setDefaultColor(fgcolor, bgcolor, spcolor);
         }
@@ -263,17 +275,9 @@ public class NvimReceiveThread extends Thread
                         int blinkoff = unpacker.unpackInt();
                         mode_info.setBlinkOff(blinkoff);
                     }
-                    case "hl_id" -> {
-                        int hl_id = unpacker.unpackInt();
-                        //mode_info.setHlId(hl_id);
-                    }
-                    case "id_lm" -> {
-                        int id_lm = unpacker.unpackInt();
-                        //mode_info.setIdLm(id_lm);
-                    }
-                    case "attr_id_lm" -> {
-                        int attr_id_lm = unpacker.unpackInt();
-                        //mode_info.setAttrIdLm(attr_id_lm);
+                    case "hl_id", "id_lm", "attr_id_lm" -> {
+                        //not used
+                        unpacker.unpackValue();
                     }
                     case "mouse_shape" -> {
                         int mouse_shape = unpacker.unpackInt();
@@ -307,10 +311,10 @@ public class NvimReceiveThread extends Thread
         }
         case "win_viewport" -> {
             // do nothing
-            var note_args = unpacker.unpackValue();
+            unpacker.unpackValue();
         }
         case "mouse_on","mouse_off" -> {
-            unpacker.unpackArrayHeader();
+            unpacker.unpackValue();
             // do nothing
         }
         default -> {
