@@ -40,10 +40,10 @@ public class NvimReceiveThread extends Thread
 
                     if (messageType==1) {
                         // Response
-                        parseResponse(msg_size, unpacker);
+                        parseResponse(msg_size-1, unpacker);
                     } else if (messageType==2) {
                         // Notification
-                        parseNotifycation(msg_size, unpacker);
+                        parseNotifycation(msg_size-1, unpacker);
                     } else {
             	        throw new IOException( "Unexpected message: " + messageType);
                     }
@@ -208,22 +208,80 @@ public class NvimReceiveThread extends Thread
             dmodel.clear();
         }
         case "mode_info_set" -> {
-            System.out.println("mode_info_set");
+            //System.out.println("mode_info_set");
             int param_size = unpacker.unpackArrayHeader();
             boolean  cursor_style_enabled = unpacker.unpackBoolean();
             int map_ary = unpacker.unpackArrayHeader();
             for (int i=0; i<map_ary; i++) {
-                System.out.println("ary:"+i);
+                //System.out.println("ary:"+i);
+                NvimModeInfo  mode_info = new NvimModeInfo();
                 int map_size = unpacker.unpackMapHeader();
-                HashMap<String,Object>  map = new HashMap<String,Object>();
                 for (int m=0; m<map_size; m++) {
                     String key = unpacker.unpackString();
-                    Object value = unpacker.unpackValue();
-                    map.put(key,value);
-                    System.out.println("info: key="+key+" val="+value);
+                    
+                    switch (key) {
+                    case "name" -> {
+                        String name = unpacker.unpackString();
+                        mode_info.setName(name);
+                    }
+                    case "short_name" -> {
+                        String short_name = unpacker.unpackString();
+                        mode_info.setShortName(short_name);
+                    }
+                    case "attr_id" -> {
+                        int id = unpacker.unpackInt();
+                        mode_info.setAttrId(id);
+                    }
+                    case "cursor_shape" -> {
+                        String cursor_shape = unpacker.unpackString();
+                        switch (cursor_shape) {
+                        case "block" -> mode_info.setShape(NvimModeInfo.SHAPE_BLOCK);
+                        case "horizontal" -> mode_info.setShape(NvimModeInfo.SHAPE_HORIZONTAL);
+                        case "vertical" -> mode_info.setShape(NvimModeInfo.SHAPE_VERTICAL);
+                        default -> System.out.println("Warning!!: unknown cursor_shape="+cursor_shape);
+                        }
+                    }
+                    case "cell_percentage" -> {
+                        int cell_percentage = unpacker.unpackInt();
+                        mode_info.setCellPercentage(cell_percentage);
+                    }
+                    case "blinkwait" -> {
+                        int blinkwait = unpacker.unpackInt();
+                        mode_info.setBlinkWait(blinkwait);
+                    }
+                    case "blinkon" -> {
+                        int blinkon = unpacker.unpackInt();
+                        mode_info.setBlinkOn(blinkon);
+                    }
+                    case "blinkoff" -> {
+                        int blinkoff = unpacker.unpackInt();
+                        mode_info.setBlinkOff(blinkoff);
+                    }
+                    case "hl_id" -> {
+                        int hl_id = unpacker.unpackInt();
+                        //mode_info.setHlId(hl_id);
+                    }
+                    case "id_lm" -> {
+                        int id_lm = unpacker.unpackInt();
+                        //mode_info.setIdLm(id_lm);
+                    }
+                    case "attr_id_lm" -> {
+                        int attr_id_lm = unpacker.unpackInt();
+                        //mode_info.setAttrIdLm(attr_id_lm);
+                    }
+                    case "mouse_shape" -> {
+                        int mouse_shape = unpacker.unpackInt();
+                        //mode_info.setMouseShape(mouse_shape);
+                    }
+                    default -> {
+                        Object value = unpacker.unpackValue();
+                        System.out.println("Warning!!: unknown key="+key+" val="+value);
+                    }
+                    }
                 }
+                dmodel.setModeInfo(i, mode_info);
             }
-            System.out.println("mode_info_set end");
+            //System.out.println("mode_info_set end");
             //TODO implements
         }
         case "mode_change" -> {

@@ -92,11 +92,6 @@ public class NvimDrawModel
     public class Cursor
     {
         int grid,row,col;
-        int shape;
-
-        final int SHAPE_BLOCK=0;
-        final int SHAPE_HORIZONTAL=1;
-        final int SHAPE_VERTICAL=2;
 
         public void setCursor(int grid, int row, int col) {
             this.grid = grid;
@@ -118,6 +113,7 @@ public class NvimDrawModel
     Color     foreground,background,special_color;
     Cursor    cursor;
     int       mode;
+    NvimModeInfo[]  modeInfos;
 
     ArrayList<NvimDrawEventListener>  drawlisteners;
 
@@ -170,9 +166,9 @@ public class NvimDrawModel
     }
 
     /**
-     * ハイライトを設定します
-     * @param id 設定するハイライトのid
-     * @param hl 設定するハイライト
+     * set hilight
+     * @param id hilight id
+     * @param hl hilight
      */
     public void setHilight(int id, Hilight hl) {
         if (hilights == null || id >= hilights.length) {
@@ -184,8 +180,9 @@ public class NvimDrawModel
     }
     
     /**
-     * ハイライトを取得します
-     * @param id 取得するハイライトのid
+     * get hilight
+     * @param id hilight id
+     * @return hilight
      */
     public Hilight getHilight(int id) {
         if (hilights[id] == null) {
@@ -195,7 +192,7 @@ public class NvimDrawModel
     }
 
     /**
-     * カーソルを設定します
+     * set cursor position
      * @param grid grid
      * @param row  row
      * @param col  column
@@ -205,23 +202,54 @@ public class NvimDrawModel
     }
 
     /**
-     * カーソルを返します
-     * @return カーソル
+     * get cursor position
+     * @return cursor
      */
     public Cursor getCursor() {
         return cursor;
     }
 
     /**
-     * modeを設定します
-     * @param mode 設定先のモード
+     * set mode
+     * @param mode new mode
      */
     public void setMode(int mode) {
         this.mode = mode;
     }
 
     /**
-     * scrollします
+     * get mode info
+     * @param mode_idx
+     * @return
+     */
+    public NvimModeInfo getModeInfo(int mode_idx) {
+        if (this.modeInfos == null || mode_idx >= this.modeInfos.length) {
+            return null;
+        }
+        return this.modeInfos[mode_idx];
+    }
+    
+    /**
+     * set mode info
+     * @param mode_idx
+     * @param modeInfo
+     */
+    public void setModeInfo(int mode_idx, NvimModeInfo modeInfo) {
+        if (this.modeInfos == null || mode_idx >= this.modeInfos.length) {
+            int newlen = ((mode_idx/8)+1)*8;
+            this.modeInfos = java.util.Arrays.copyOf(modeInfos, newlen);
+        }
+        this.modeInfos[mode_idx] = modeInfo;
+    }
+
+    /**
+     * do scroll
+     * @param top top row
+     * @param bottom bottom row
+     * @param left left column
+     * @param right right column
+     * @param rowoff row offset
+     * @param coloff column offset
      */
     public void scroll(int top, int bottom, int left, int right, int rowoff, int coloff) {
         System.out.println("scroll top:"+top+" bottom:"+bottom+" row:"+rowoff);
@@ -250,10 +278,16 @@ public class NvimDrawModel
             }
         }
     }
+    /**
+     * flush DrawEvent
+     */
+    public void flush() {
+        fireDrawEvent(0);
+    }
 
     /**
-     * DrawEventListenerを登録します
-     * @param l 登録するリスナ
+     * Add DrawEventListener
+     * @param l listener
      */
     public void addDrawEventListener(NvimDrawEventListener l) {
         if (!drawlisteners.contains(l)) {
@@ -262,8 +296,8 @@ public class NvimDrawModel
     }
 
     /**
-     * DrawEventを発生させます
-     * @param event 発生させるイベントのタイプ
+     * fire DrawEvent
+     * @param event event type
      */
     public void fireDrawEvent(int event) {
         for (NvimDrawEventListener l : drawlisteners) {
@@ -271,15 +305,9 @@ public class NvimDrawModel
         }
     }
 
-    /**
-     * nvimのflushコマンドを受け付けます
-     */
-    public void flush() {
-        fireDrawEvent(0);
-    }
-
     public NvimDrawModel() {
         this.hilights = new Hilight[32];
+        this.modeInfos = new NvimModeInfo[8];
         this.cursor = new Cursor();
         this.drawlisteners = new ArrayList<NvimDrawEventListener>();
     }
