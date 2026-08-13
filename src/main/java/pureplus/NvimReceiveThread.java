@@ -61,7 +61,7 @@ public class NvimReceiveThread extends Thread
         ValueType  err_type = getNextType(unpacker);
         var error = unpacker.unpackValue();
         // result
-        ValueType  res_type = getNextType(unpacker);
+        //ValueType  res_type = getNextType(unpacker);
         var result = unpacker.unpackValue();
 
         if (err_type != ValueType.NIL) {
@@ -77,7 +77,7 @@ public class NvimReceiveThread extends Thread
         if (method.equals("redraw")) { 
             for (int i=0; i<size-1; i++) {
                 int ary_size = unpacker.unpackArrayHeader();
-                for (int j=0; i<ary_size; i++) {
+                for (int j=0; j<ary_size; j++) {
                     int  cmd_size = unpacker.unpackArrayHeader();
                     String cmd = unpacker.unpackString();
                     parseDrawEvent(cmd, cmd_size, unpacker);
@@ -90,21 +90,6 @@ public class NvimReceiveThread extends Thread
                 System.out.println( "    " + note_args);
             }
         }
-    }
-
-    private String parseArrayString(int size) throws IOException {
-        StringBuilder  sb = new StringBuilder();
-        for (int i=0; i<size; i++) {
-            int  str_size = unpacker.unpackArrayHeader();
-            String str = unpacker.unpackString();
-            sb.append(str);
-        }
-        return sb.toString();
-    }
-
-    private String parseArrayString() throws IOException {
-        int  ary_size = unpacker.unpackArrayHeader();
-        return parseArrayString(ary_size);
     }
 
     private void parseCell(int row, int col, MessageUnpacker unpacker) throws IOException {

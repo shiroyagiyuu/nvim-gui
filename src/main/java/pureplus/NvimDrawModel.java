@@ -52,16 +52,24 @@ public class NvimDrawModel
             return this.foreground;
         }
 
-        public Color getBackground() {
-            return this.background;
-        }
-
         public void setForeground(int col) {
             this.foreground = new Color(col);
         }
 
+        public Color getBackground() {
+            return this.background;
+        }
+
         public void setBackground(int col) {
             this.background = new Color(col);
+        }
+
+        public Color getSpecialColor() {
+            return special_color;
+        }
+
+        public void setSpecialColor(int col) {
+            this.special_color = new Color(col);
         }
 
         public void setBold(boolean b) {

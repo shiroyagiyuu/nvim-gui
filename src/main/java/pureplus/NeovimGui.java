@@ -2,7 +2,6 @@ package pureplus;
 
 import java.io.OutputStream;
 import java.io.InputStream;
-import java.io.IOException;
 
 public class NeovimGui
 {

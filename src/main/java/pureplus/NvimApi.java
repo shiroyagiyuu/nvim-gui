@@ -19,7 +19,7 @@ public class NvimApi
     }
 
     public void uiAttach(int width, int height) throws IOException {
-        Map   options = Map.of("ext_linegrid", true);
+        Map<String, Object>  options = Map.of("ext_linegrid", true);
 
         request("nvim_ui_attach", width, height, options);
     }
@@ -32,7 +32,7 @@ public class NvimApi
         request("nvim_ui_try_resize", width, height);
     }
 
-    private void packMap(MessagePacker packer, Map map) throws IOException {
+    private void packMap(MessagePacker packer, Map<String, Object> map) throws IOException {
         packer.packMapHeader(map.size());
 
         for (Object keyobj : map.keySet()) {
@@ -85,7 +85,9 @@ public class NvimApi
                 packer.packString((String)params[i]);
             }
             else if (params[i] instanceof Map) {
-                packMap(packer, (Map)params[i]);
+                @SuppressWarnings("unchecked")
+                Map<String, Object>  map = (Map<String, Object>)params[i];
+                packMap(packer, map);
             }
             else {
                 throw new ClassCastException("Not Supported Now.. class is "+params[i].getClass());
