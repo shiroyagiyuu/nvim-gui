@@ -1,12 +1,12 @@
 package pureplus;
 
 import org.msgpack.core.MessagePack;
-import org.msgpack.core.MessagePacker;
 import org.msgpack.core.MessageUnpacker;
 import org.msgpack.core.MessageFormat;
 import org.msgpack.value.ValueType;
 
-import java.io.*;
+import java.io.InputStream;
+import java.io.IOException;
 import java.util.HashMap;
 
 public class NvimReceiveThread extends Thread
@@ -71,15 +71,6 @@ public class NvimReceiveThread extends Thread
         }
     }
 
-    private void parseNotifyArgs(int size, MessageUnpacker unpacker) throws IOException {
-
-        for (int i=0; i<size; i++) {
-            ValueType vtype = getNextType(unpacker);
-            var note_args = unpacker.unpackValue();
-            System.out.println( "args:" + note_args);
-        }
-    }
-
     private void parseNotifycation(int size, MessageUnpacker unpacker) throws IOException {
         String method = unpacker.unpackString();
 
@@ -93,14 +84,10 @@ public class NvimReceiveThread extends Thread
                 }
             }
         } else {
-            ValueType  vtype = getNextType(unpacker);
-            if (vtype == ValueType.ARRAY) {
-                System.out.println( "Notification: " + method );
-                int ary_size = unpacker.unpackArrayHeader();
-                parseNotifyArgs(ary_size, unpacker);
-            } else {    
+            System.out.println( "Notification: " + method );
+            for (int i=0; i<size-1; i++) {
                 var note_args = unpacker.unpackValue();
-                System.out.println( "Notification: " + method + " " + note_args);
+                System.out.println( "    " + note_args);
             }
         }
     }
@@ -143,7 +130,8 @@ public class NvimReceiveThread extends Thread
     }
 
     private void parseDrawEvent(String cmd, int size, MessageUnpacker unpacker) throws IOException {
-        if (cmd.equals("grid_line")) {
+        switch (cmd) {
+        case "grid_line" -> {
             for (int i=0; i<size-1; i++) {
                 int cmd_size = unpacker.unpackArrayHeader();
                 int grid = unpacker.unpackInt();
@@ -159,7 +147,7 @@ public class NvimReceiveThread extends Thread
                 //dlistener.endGridLine(wrap);
             }
         }
-        else if (cmd.equals("hl_attr_define")) {
+        case "hl_attr_define" -> {
             System.out.println("hl_attr");
             for (int i=0; i<size-1; i++) {
                 int attr_size = unpacker.unpackArrayHeader();
@@ -190,7 +178,7 @@ public class NvimReceiveThread extends Thread
                 Object info = unpacker.unpackValue();   //nouse
             }
         }
-        else if (cmd.equals("default_colors_set")) {
+        case "default_colors_set" -> {
             int param_size = unpacker.unpackArrayHeader();
             int fgcolor = unpacker.unpackInt();
             int bgcolor = unpacker.unpackInt();
@@ -200,7 +188,7 @@ public class NvimReceiveThread extends Thread
             
             dmodel.setDefaultColor(fgcolor, bgcolor, spcolor);
         }
-        else if (cmd.equals("grid_cursor_goto")) {
+        case "grid_cursor_goto" -> {
             int param_size = unpacker.unpackArrayHeader();
             int grid = unpacker.unpackInt();
             int row  = unpacker.unpackInt();
@@ -208,7 +196,7 @@ public class NvimReceiveThread extends Thread
 
             dmodel.setCursor(grid, row, col);
         }
-        else if (cmd.equals("grid_scroll")) {
+        case "grid_scroll" -> {
             int param_size = unpacker.unpackArrayHeader();
             int grid  = unpacker.unpackInt();
             int top   = unpacker.unpackInt();
@@ -220,7 +208,7 @@ public class NvimReceiveThread extends Thread
 
             dmodel.scroll(top, bot, left, right, rows, cols);
         }
-        else if (cmd.equals("grid_resize")) {
+        case "grid_resize" -> {
             int param_size = unpacker.unpackArrayHeader();
             int grid  = unpacker.unpackInt();
             int width = unpacker.unpackInt();
@@ -228,13 +216,13 @@ public class NvimReceiveThread extends Thread
 
             dmodel.setSize(width, height);
         }
-        else if (cmd.equals("grid_clear")) {
+        case "grid_clear" -> {
             int param_size = unpacker.unpackArrayHeader();
             int grid  = unpacker.unpackInt();
 
             dmodel.clear();
         }
-        else if (cmd.equals("mode_info_set")) {
+        case "mode_info_set" -> {
             System.out.println("mode_info_set");
             int param_size = unpacker.unpackArrayHeader();
             boolean  cursor_style_enabled = unpacker.unpackBoolean();
@@ -252,10 +240,10 @@ public class NvimReceiveThread extends Thread
             }
             System.out.println("mode_info_set end");
         }
-        else if (cmd.equals("flush")) {
+        case "flush" -> {
             dmodel.flush();
         }
-        else {
+        default -> {
             System.out.print( "DrawEvent: " + cmd);
             for (int i=0; i<size-1; i++) {
                 var note_args = unpacker.unpackValue();
@@ -263,10 +251,12 @@ public class NvimReceiveThread extends Thread
             }
             System.out.println();
         }
+        }
     }
 
-    private void parseOldDrawEvent(String cmd, int size, MessageUnpacker unpacker) throws IOException {
-        if (cmd.equals("cursor_goto")) {
+    private void parseDrawCellEvent(String cmd, int size, MessageUnpacker unpacker) throws IOException {
+        switch (cmd) {
+        case "cursor_goto" -> {
             int  row, col;
             int  arg_size = unpacker.unpackArrayHeader();
             
@@ -275,7 +265,8 @@ public class NvimReceiveThread extends Thread
 
             System.out.println("cursor_goto: " + row + "," + col);
             //if (dlistener != null) dlistener.cursorGoto(row, col);
-        } else if (cmd.equals("put")) {
+        }
+        case "put" -> {
             StringBuilder  sb = new StringBuilder();
             for (int i=0; i<size-1; i++) {
                 int  str_size = unpacker.unpackArrayHeader();
@@ -284,7 +275,8 @@ public class NvimReceiveThread extends Thread
             }
             System.out.println("put: \"" + sb.toString() + "\"");
             //if (dlistener != null) dlistener.put(sb.toString());
-        } else if (cmd.equals("highlight_set")) {
+        }
+        case "highlight_set" -> {
             int  arg_size = unpacker.unpackArrayHeader();
             int  attr_size = unpacker.unpackMapHeader();
             HashMap<String,Object>   attrs = new HashMap<String,Object>();
@@ -295,13 +287,15 @@ public class NvimReceiveThread extends Thread
             }
             System.out.println("hilight_set:" + attrs.toString());
             // if (dlistener != null) dlistener.put(sb.toString());
-        } else {
+        }
+        default -> {
             System.out.print( "DrawEvent: " + cmd);
             for (int i=0; i<size-1; i++) {
                 var note_args = unpacker.unpackValue();
 			    System.out.print("," + note_args);
             }
             System.out.println();
+        }
         }
     }
 }
