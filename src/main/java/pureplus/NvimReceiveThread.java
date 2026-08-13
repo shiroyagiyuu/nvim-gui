@@ -234,6 +234,24 @@ public class NvimReceiveThread extends Thread
 
             dmodel.clear();
         }
+        else if (cmd.equals("mode_info_set")) {
+            System.out.println("mode_info_set");
+            int param_size = unpacker.unpackArrayHeader();
+            boolean  cursor_style_enabled = unpacker.unpackBoolean();
+            int map_ary = unpacker.unpackArrayHeader();
+            for (int i=0; i<map_ary; i++) {
+                System.out.println("ary:"+i);
+                int map_size = unpacker.unpackMapHeader();
+                HashMap<String,Object>  map = new HashMap<String,Object>();
+                for (int m=0; m<map_size; m++) {
+                    String key = unpacker.unpackString();
+                    Object value = unpacker.unpackValue();
+                    map.put(key,value);
+                    System.out.println("info: key="+key+" val="+value);
+                }
+            }
+            System.out.println("mode_info_set end");
+        }
         else if (cmd.equals("flush")) {
             dmodel.flush();
         }
