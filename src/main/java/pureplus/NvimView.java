@@ -69,17 +69,26 @@ public class NvimView extends JPanel implements NvimDrawEventListener
         int str_y = cellBounds.y + ascent;
 
         NvimDrawModel.Hilight  hl = model.getHilight(cell.getHilight());
+        Color  fgcol,bgcol;
         if (hl != null) {
-            g.setColor(hl.getBackground());
-            g.fillRect(cellBounds.x, cellBounds.y, cellBounds.width, cellBounds.height);
-
+            fgcol = hl.getForeground();
+            bgcol = hl.getBackground();
+            if (fgcol == null) {
+                fgcol = model.getForeground();
+            }
+            if (bgcol == null) {
+                bgcol = model.getBackground();
+            }
             g.setFont(hl.getFont());
-            g.setColor(hl.getForeground());
         } else {
-            g.setColor(Color.white);
-            g.fillRect(cellBounds.x, cellBounds.y, cellBounds.width, cellBounds.height);
-            g.setColor(Color.black);
+                fgcol = model.getForeground();
+                bgcol = model.getBackground();
         }
+        
+        g.setColor(bgcol);
+        g.fillRect(cellBounds.x, cellBounds.y, cellBounds.width, cellBounds.height);
+
+        g.setColor(fgcol);
         g.drawString(cell.getText(), cellBounds.x, str_y);
     }
 
