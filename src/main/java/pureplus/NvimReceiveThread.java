@@ -239,6 +239,14 @@ public class NvimReceiveThread extends Thread
                 }
             }
             System.out.println("mode_info_set end");
+            //TODO implements
+        }
+        case "mode_change" -> {
+            int param_size = unpacker.unpackArrayHeader();
+            String  mode = unpacker.unpackString();
+            int     mode_idx = unpacker.unpackInt();
+            System.out.println("mode_change to " + mode);
+            //TODO implements
         }
         case "flush" -> {
             dmodel.flush();
