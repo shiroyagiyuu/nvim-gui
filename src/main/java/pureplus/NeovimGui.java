@@ -2,16 +2,23 @@ package pureplus;
 
 import java.io.OutputStream;
 import java.io.InputStream;
+import java.util.ArrayList;
 
 public class NeovimGui
 {
     public static void main(String[] args) {
 
-        ProcessBuilder pb = new ProcessBuilder(
-                "nvim",
-                "--embed",
-                "--headless"
-        );
+        ArrayList<String> argList = new ArrayList<String>();
+
+        argList.add("nvim");
+        argList.add("--embed");
+        argList.add("--headless");
+        if (args.length > 0) {
+            for (String arg : args) {
+                argList.add(arg);
+            }
+        }
+        ProcessBuilder pb = new ProcessBuilder(argList);
 
         int  result = -1;
         try {
