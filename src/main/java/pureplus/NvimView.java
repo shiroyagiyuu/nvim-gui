@@ -105,11 +105,13 @@ public class NvimView extends JPanel implements NvimDrawEventListener
             }
         }
 
-        NvimDrawModel.Cursor  cursor = model.getCursor();
-        cellBounds.x = cursor.getColumn() * cellBounds.width;
-        cellBounds.y = cursor.getRow() * cellBounds.height;
-        g.setXORMode(Color.black);
-        g.fillRect(cellBounds.x, cellBounds.y, cellBounds.width, cellBounds.height);
+        if (!model.isBusy()) {
+            NvimDrawModel.Cursor  cursor = model.getCursor();
+            cellBounds.x = cursor.getColumn() * cellBounds.width;
+            cellBounds.y = cursor.getRow() * cellBounds.height;
+            g.setXORMode(Color.black);
+            g.fillRect(cellBounds.x, cellBounds.y, cellBounds.width, cellBounds.height);
+        }
     }
 
     public void drawEventOccurred(int event) {

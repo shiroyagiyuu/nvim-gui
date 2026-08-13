@@ -113,6 +113,7 @@ public class NvimDrawModel
     Color     foreground,background,special_color;
     Cursor    cursor;
     int       mode;
+    boolean   cursor_busy;
     NvimModeInfo[]  modeInfos;
 
     ArrayList<NvimDrawEventListener>  drawlisteners;
@@ -240,6 +241,18 @@ public class NvimDrawModel
             this.modeInfos = java.util.Arrays.copyOf(modeInfos, newlen);
         }
         this.modeInfos[mode_idx] = modeInfo;
+    }
+
+    /**
+     * busy mouse cursor
+     * @param busy true:cursor not draw, false: cursor will draw
+     */
+    public void setBusy(boolean busy) {
+        this.cursor_busy = busy;
+    }
+
+    public boolean isBusy() {
+        return this.cursor_busy;
     }
 
     /**

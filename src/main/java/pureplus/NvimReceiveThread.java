@@ -163,6 +163,12 @@ public class NvimReceiveThread extends Thread
                 Object info = unpacker.unpackValue();   //nouse
             }
         }
+        case "hl_group_set" -> {
+            // do nothing
+            for (int i=0; i<size-1; i++) {
+                var note_args = unpacker.unpackValue();
+            }
+        }
         case "default_colors_set" -> {
             int param_size = unpacker.unpackArrayHeader();
             int fgcolor = unpacker.unpackInt();
@@ -282,20 +288,33 @@ public class NvimReceiveThread extends Thread
                 dmodel.setModeInfo(i, mode_info);
             }
             //System.out.println("mode_info_set end");
-            //TODO implements
         }
         case "mode_change" -> {
             int param_size = unpacker.unpackArrayHeader();
             String  mode = unpacker.unpackString();
             int     mode_idx = unpacker.unpackInt();
-            System.out.println("mode_change to " + mode);
-            //TODO implements
+            System.out.println("mode_change to " + mode + "("+mode_idx+")");
+            dmodel.setMode(mode_idx);
+        }
+        case "busy_start" -> {
+            dmodel.setBusy(true);
+        }
+        case "busy_stop" -> {
+            dmodel.setBusy(false);
         }
         case "flush" -> {
             dmodel.flush();
         }
+        case "win_viewport" -> {
+            // do nothing
+            var note_args = unpacker.unpackValue();
+        }
+        case "mouse_on","mouse_off" -> {
+            unpacker.unpackArrayHeader();
+            // do nothing
+        }
         default -> {
-            System.out.print( "DrawEvent: " + cmd);
+            System.out.print( "Event: " + cmd);
             for (int i=0; i<size-1; i++) {
                 var note_args = unpacker.unpackValue();
 			    System.out.print("," + note_args);
