@@ -2,6 +2,7 @@ package pureplus;
 
 import javax.swing.*;
 import java.awt.Dimension;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Font;
 import java.awt.FontMetrics;
@@ -9,6 +10,7 @@ import java.awt.Graphics;
 import java.awt.Color;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.im.InputMethodRequests;
 
 public class NvimView extends JPanel implements NvimDrawEventListener
 {
@@ -17,6 +19,7 @@ public class NvimView extends JPanel implements NvimDrawEventListener
     Dimension      cellSize;
     int            ascent;
     boolean        resize_completed;
+    NvimInputMethodRequests inputMethodListener;
 
 	public NvimView(NvimDrawModel model) {
         this.model = model;
@@ -25,6 +28,10 @@ public class NvimView extends JPanel implements NvimDrawEventListener
 
         setFocusable(true);
         setFocusTraversalKeysEnabled(false);
+
+        inputMethodListener = new NvimInputMethodRequests(this);
+        addInputMethodListener(inputMethodListener);
+
         resize_completed = false;
 	}
 
@@ -63,33 +70,36 @@ public class NvimView extends JPanel implements NvimDrawEventListener
                 //redrawFrame();
             }
         });
+        inputMethodListener.setApi(api);
     }
 
     private void paintCell(Graphics g, NvimDrawModel.Cell cell, Rectangle cellBounds) {
         int str_y = cellBounds.y + ascent;
 
-        NvimDrawModel.Hilight  hl = model.getHilight(cell.getHilight());
-        Color  fgcol,bgcol;
-        if (hl != null) {
-            fgcol = hl.getForeground();
-            bgcol = hl.getBackground();
-            if (fgcol == null) {
-                fgcol = model.getForeground();
+        if (!cell.getText().isEmpty()) {
+            NvimDrawModel.Hilight  hl = model.getHilight(cell.getHilight());
+            Color  fgcol,bgcol;
+            if (hl != null) {
+                fgcol = hl.getForeground();
+                bgcol = hl.getBackground();
+                if (fgcol == null) {
+                    fgcol = model.getForeground();
+                }
+                if (bgcol == null) {
+                    bgcol = model.getBackground();
+                }
+                g.setFont(hl.getFont());
+            } else {
+                    fgcol = model.getForeground();
+                    bgcol = model.getBackground();
             }
-            if (bgcol == null) {
-                bgcol = model.getBackground();
-            }
-            g.setFont(hl.getFont());
-        } else {
-                fgcol = model.getForeground();
-                bgcol = model.getBackground();
-        }
-        
-        g.setColor(bgcol);
-        g.fillRect(cellBounds.x, cellBounds.y, cellBounds.width, cellBounds.height);
 
-        g.setColor(fgcol);
-        g.drawString(cell.getText(), cellBounds.x, str_y);
+            g.setColor(bgcol);
+            g.fillRect(cellBounds.x, cellBounds.y, cellBounds.width, cellBounds.height);
+
+            g.setColor(fgcol);
+            g.drawString(cell.getText(), cellBounds.x, str_y);
+        }
     }
 
     @Override
@@ -114,6 +124,9 @@ public class NvimView extends JPanel implements NvimDrawEventListener
             }
         }
 
+        g.setColor(model.getForeground());
+        inputMethodListener.paint(g);
+
         if (!model.isBusy()) {
             NvimDrawModel.Cursor  cursor = model.getCursor();
             cellBounds.x = cursor.getColumn() * cellBounds.width;
@@ -121,6 +134,27 @@ public class NvimView extends JPanel implements NvimDrawEventListener
             g.setXORMode(Color.black);
             g.fillRect(cellBounds.x, cellBounds.y, cellBounds.width, cellBounds.height);
         }
+    }
+
+    public Rectangle getCursorBounds() {
+        if (cellSize==null) { return new Rectangle(0, 0, 0, 0); }
+        NvimDrawModel.Cursor  cursor = model.getCursor();
+        Rectangle  cursorBounds = new Rectangle(cursor.getColumn() * cellSize.width,
+                                            cursor.getRow() * cellSize.height,
+                                            cellSize.width,
+                                            cellSize.height);
+        //api.uiSetCursor(cellBounds);
+        return cursorBounds;
+    }
+
+    public Rectangle getCursorBoundsFromDisplay() {
+        if (cellSize==null) { return new Rectangle(0, 0, 0, 0); }
+        NvimDrawModel.Cursor  cursor = model.getCursor();
+        Point p = new Point(cursor.getColumn() * cellSize.width,
+                        cursor.getRow() * cellSize.height);
+        SwingUtilities.convertPointToScreen(p, this);
+        Rectangle cursorBounds = new Rectangle(p.x, p.y, cellSize.width, cellSize.height);
+        return cursorBounds;
     }
 
     public void drawEventOccurred(int event) {
@@ -146,6 +180,11 @@ public class NvimView extends JPanel implements NvimDrawEventListener
             resize_completed = true;
             requestFocusInWindow();
         });
+    }
+
+    @Override
+    public InputMethodRequests getInputMethodRequests() {
+        return inputMethodListener;
     }
 }
 
