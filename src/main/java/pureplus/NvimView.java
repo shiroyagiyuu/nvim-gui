@@ -104,6 +104,35 @@ public class NvimView extends JPanel implements NvimDrawEventListener,NvimViewEv
         }
     }
 
+    private void paintCursor(Graphics g) {
+        if (!model.isBusy()) {
+            Rectangle  cursorBounds = getCursorBounds();
+            int  mode = model.getMode();
+            NvimModeInfo modeInfo = model.getModeInfo(mode);
+
+            if (modeInfo != null) {
+                int   shape = modeInfo.getShape();
+                switch (shape) {
+                    case NvimModeInfo.SHAPE_BLOCK -> {
+                        g.setXORMode(Color.black);
+                        g.fillRect(cursorBounds.x, cursorBounds.y, cursorBounds.width, cursorBounds.height);
+                    }
+                    case NvimModeInfo.SHAPE_HORIZONTAL -> {
+                        int  height = (cursorBounds.height * modeInfo.getCellPercentage()) / 100;
+                        int  y = cursorBounds.y + cursorBounds.height - height;
+                        g.setXORMode(Color.black);
+                        g.fillRect(cursorBounds.x, y, cursorBounds.width, height);
+                    }
+                    case NvimModeInfo.SHAPE_VERTICAL -> {
+                        int  width = (cursorBounds.width * modeInfo.getCellPercentage()) / 100;
+                        g.setXORMode(Color.black);
+                        g.fillRect(cursorBounds.x, cursorBounds.y, width, cursorBounds.height);
+                    }
+                }
+            }
+        }
+    }
+
     @Override
     public void paint(Graphics g) {
         g.setFont(getFont());
@@ -129,13 +158,7 @@ public class NvimView extends JPanel implements NvimDrawEventListener,NvimViewEv
         g.setColor(model.getForeground());
         inputMethodListener.paint(g);
 
-        if (!model.isBusy()) {
-            NvimDrawModel.Cursor  cursor = model.getCursor();
-            cellBounds.x = cursor.getColumn() * cellBounds.width;
-            cellBounds.y = cursor.getRow() * cellBounds.height;
-            g.setXORMode(Color.black);
-            g.fillRect(cellBounds.x, cellBounds.y, cellBounds.width, cellBounds.height);
-        }
+        paintCursor(g);
     }
 
     public Rectangle getCursorBounds() {
