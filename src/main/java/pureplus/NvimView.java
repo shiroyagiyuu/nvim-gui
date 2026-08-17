@@ -21,16 +21,38 @@ public class NvimView extends JPanel implements NvimDrawEventListener
     boolean        resize_completed;
     NvimInputMethodRequests inputMethodListener;
 
-	public NvimView(NvimDrawModel model) {
+	public NvimView(NvimDrawModel model, NvimApi api) {
         this.model = model;
+        this.api = api;
         setFont(new Font("Monospaced", Font.PLAIN, 12));
         cellSize = null;
 
         setFocusable(true);
         setFocusTraversalKeysEnabled(false);
 
-        inputMethodListener = new NvimInputMethodRequests(this);
+        inputMethodListener = new NvimInputMethodRequests(this, model, api);
         addInputMethodListener(inputMethodListener);
+
+        addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent evt) {
+                if (cellSize == null) { return; }
+
+                Dimension comp_sz = getSize();
+                Dimension grid_size = model.getSize();
+                int new_gridw = comp_sz.width / cellSize.width;
+                int new_gridh = comp_sz.height / cellSize.height;
+                if (new_gridw != grid_size.width || new_gridh != grid_size.height) {
+                     try {
+                         api.uiTryResize(new_gridw, new_gridh);
+                         resize_completed = false;
+                     } catch (java.io.IOException ex) {
+                         ex.printStackTrace();
+                     }
+                }
+                //redrawFrame();
+            }
+        });
 
         resize_completed = false;
 	}
@@ -48,29 +70,6 @@ public class NvimView extends JPanel implements NvimDrawEventListener
         setPreferredSize(new Dimension(vieww, viewh));
     
         redrawFrame();    
-    }
-
-    public void setApi(NvimApi api) {
-        this.api = api;
-        addComponentListener(new ComponentAdapter() {
-            @Override
-            public void componentResized(ComponentEvent evt) {
-                Dimension comp_sz = getSize();
-                Dimension grid_size = model.getSize();
-                int new_gridw = comp_sz.width / cellSize.width;
-                int new_gridh = comp_sz.height / cellSize.height;
-                if (new_gridw != grid_size.width || new_gridh != grid_size.height) {
-                     try {
-                         api.uiTryResize(new_gridw, new_gridh);
-                         resize_completed = false;
-                     } catch (java.io.IOException ex) {
-                         ex.printStackTrace();
-                     }
-                }
-                //redrawFrame();
-            }
-        });
-        inputMethodListener.setApi(api);
     }
 
     private void paintCell(Graphics g, NvimDrawModel.Cell cell, Rectangle cellBounds) {

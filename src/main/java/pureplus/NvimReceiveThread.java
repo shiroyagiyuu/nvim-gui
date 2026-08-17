@@ -298,7 +298,7 @@ public class NvimReceiveThread extends Thread
             String  mode = unpacker.unpackString();
             int     mode_idx = unpacker.unpackInt();
             System.out.println("mode_change to " + mode + "("+mode_idx+")");
-            dmodel.setMode(mode_idx);
+            dmodel.setMode(mode_idx, mode);
         }
         case "busy_start" -> {
             dmodel.setBusy(true);

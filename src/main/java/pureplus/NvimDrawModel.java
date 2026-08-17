@@ -140,6 +140,7 @@ public class NvimDrawModel
     Color     foreground,background,special_color;
     Cursor    cursor;
     int       mode;
+    String    modeName;
     boolean   cursor_busy;
     NvimModeInfo[]  modeInfos;
 
@@ -257,8 +258,25 @@ public class NvimDrawModel
      * set mode
      * @param mode new mode
      */
-    public void setMode(int mode) {
+    public void setMode(int mode, String mode_name) {
         this.mode = mode;
+        this.modeName = mode_name;
+    }
+
+    /**
+     * get mode
+     * @return mode
+     */
+    public int getMode() {
+        return this.mode;
+    }
+
+    /**
+     * get mode name
+     * @return mode name
+     */
+    public String getModeName() {
+        return this.modeName;
     }
 
     /**

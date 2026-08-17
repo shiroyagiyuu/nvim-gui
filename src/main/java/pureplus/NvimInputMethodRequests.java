@@ -11,15 +11,14 @@ import java.awt.FontMetrics;
 
 public class NvimInputMethodRequests implements InputMethodRequests, InputMethodListener
 {
-    NvimView view;
-    NvimApi api;
-    String  currenText;
+    private NvimView view;
+    private NvimDrawModel model;
+    private NvimApi api;
+    private String  currenText;
 
-    public NvimInputMethodRequests(NvimView view) {
+    public NvimInputMethodRequests(NvimView view, NvimDrawModel model, NvimApi api) {
         this.view = view;
-    }
-
-    public void setApi(NvimApi api) {
+        this.model = model;
         this.api = api;
     }
 
@@ -30,25 +29,35 @@ public class NvimInputMethodRequests implements InputMethodRequests, InputMethod
         
         AttributedCharacterIterator text = event.getText();
         if (text != null) {
-            StringBuilder sb = new StringBuilder();
-            int committedCount = event.getCommittedCharacterCount();
-            int count = 0;
-            for (char c = text.first(); c != AttributedCharacterIterator.DONE; c = text.next()) {
-                // Process the committed character 'c' as needed
-                if (count < committedCount) {
-                    // This character is committed
-                    try {
+            try {
+                StringBuilder sb = new StringBuilder();
+                int committedCount = event.getCommittedCharacterCount();
+
+                //String bkmode = model.getModeName();
+                //if (committedCount > 0 && !bkmode.equals("insert")) {
+                //    api.input("i");
+                //}
+
+                int count = 0;
+                for (char c = text.first(); c != AttributedCharacterIterator.DONE; c = text.next()) {
+                    // Process the committed character 'c' as needed
+                    if (count < committedCount) {
+                        // This character is committed
                         api.input(String.valueOf(c));
-                    } catch (Exception e) {
-                        e.printStackTrace();
                     }
+                    sb.append(c);
+                    count++;
+                
+                    //System.out.println("Committed character: " + c);
                 }
-                sb.append(c);
-                count++;
-            
-                //System.out.println("Committed character: " + c);
+                currenText = sb.toString();
+
+                //if (!bkmode.equals("insert")) {
+                //    api.input("<Esc>");
+                //}
+            } catch (java.io.IOException ex) {
+                ex.printStackTrace();
             }
-            currenText = sb.toString();
         } else {
             currenText = null;
         }

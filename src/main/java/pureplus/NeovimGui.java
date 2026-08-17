@@ -30,18 +30,17 @@ public class NeovimGui
             NvimDrawModel   model = new NvimDrawModel();
             model.setSize(80,24);
 
-            NvimView   view = new NvimView(model);
-            model.addDrawEventListener(view);
-            view.createFrame();
-
             NvimReceiveThread th = new NvimReceiveThread(in);
             th.setDrawModel(model);
             th.start();
 
             NvimApi   api = new NvimApi(out); 
+
+            NvimView   view = new NvimView(model,api);
+            model.addDrawEventListener(view);
+            view.createFrame();
             NvimKeyAdapter  keyAdapter = new NvimKeyAdapter(api);
             view.addKeyListener(keyAdapter);
-            view.setApi(api);
 
             api.uiAttach(80,24);
 
