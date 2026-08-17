@@ -14,7 +14,7 @@ public class NvimInputMethodRequests implements InputMethodRequests, InputMethod
     private NvimView view;
     private NvimDrawModel model;
     private NvimApi api;
-    private String  currenText;
+    private String  currentText;
 
     public NvimInputMethodRequests(NvimView view, NvimDrawModel model, NvimApi api) {
         this.view = view;
@@ -45,15 +45,17 @@ public class NvimInputMethodRequests implements InputMethodRequests, InputMethod
                 
                     //System.out.println("Committed character: " + c);
                 }
-                currenText = sb.toString();
+                currentText = sb.toString();
+                if (committedCount == sb.length()) currentText = null;
             } catch (java.io.IOException ex) {
                 ex.printStackTrace();
+                currentText = null;
             }
         } else {
-            currenText = null;
+            currentText = null;
         }
         view.repaint();
-        //System.out.println("Current text: " + currenText);
+        //System.out.println("Current text: " + currentText);
     }
 
     @Override
@@ -93,7 +95,7 @@ public class NvimInputMethodRequests implements InputMethodRequests, InputMethod
     @Override
     public AttributedCharacterIterator getCommittedText(int beginIndex, int endIndex, AttributedCharacterIterator.Attribute[] attributes) {
         // Return the committed text for the given range
-        return null;
+        return new java.text.AttributedString("").getIterator();
     }
 
     @Override
@@ -116,13 +118,13 @@ public class NvimInputMethodRequests implements InputMethodRequests, InputMethod
 
     public void paint(Graphics g) {
         // Optionally, you can implement custom painting for the input method if needed
-        //System.out.println("Painting input method text: " + currenText);
-        if (currenText != null) {
+        //System.out.println("Painting input method text: " + currentText);
+        if (currentText != null) {
             Rectangle cursorBounds = view.getCursorBounds();
             FontMetrics fm = g.getFontMetrics();
             //g.setColor(Color.BLACK);
-            g.drawString(currenText, cursorBounds.x, cursorBounds.y + fm.getAscent());
-            //System.out.println("Painting current text: " + currenText + " at " + cursorBounds);
+            g.drawString(currentText, cursorBounds.x, cursorBounds.y + fm.getAscent());
+            //System.out.println("Painting current text: " + currentText + " at " + cursorBounds);
         }
     }
 }
