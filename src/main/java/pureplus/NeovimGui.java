@@ -42,6 +42,8 @@ public class NeovimGui
             NvimKeyAdapter  keyAdapter = new NvimKeyAdapter(api);
             view.addKeyListener(keyAdapter);
 
+            th.addViewEventListener(view);
+
             api.uiAttach(80,24);
 
             result = process.waitFor();

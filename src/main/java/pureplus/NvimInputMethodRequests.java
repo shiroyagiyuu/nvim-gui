@@ -25,18 +25,13 @@ public class NvimInputMethodRequests implements InputMethodRequests, InputMethod
     @Override
     public void inputMethodTextChanged(InputMethodEvent event) {
         // Handle text input method changes if needed
-        System.out.println("Input method text changed: " + event);
+        //System.out.println("Input method text changed: " + event);
         
         AttributedCharacterIterator text = event.getText();
         if (text != null) {
             try {
                 StringBuilder sb = new StringBuilder();
                 int committedCount = event.getCommittedCharacterCount();
-
-                //String bkmode = model.getModeName();
-                //if (committedCount > 0 && !bkmode.equals("insert")) {
-                //    api.input("i");
-                //}
 
                 int count = 0;
                 for (char c = text.first(); c != AttributedCharacterIterator.DONE; c = text.next()) {
@@ -51,10 +46,6 @@ public class NvimInputMethodRequests implements InputMethodRequests, InputMethod
                     //System.out.println("Committed character: " + c);
                 }
                 currenText = sb.toString();
-
-                //if (!bkmode.equals("insert")) {
-                //    api.input("<Esc>");
-                //}
             } catch (java.io.IOException ex) {
                 ex.printStackTrace();
             }
@@ -62,24 +53,28 @@ public class NvimInputMethodRequests implements InputMethodRequests, InputMethod
             currenText = null;
         }
         view.repaint();
-        System.out.println("Current text: " + currenText);
+        //System.out.println("Current text: " + currenText);
     }
 
     @Override
     public void caretPositionChanged(InputMethodEvent event) {
         // Handle caret position changes if needed
-        System.out.println("Caret position changed: " + event);
+        //System.out.println("Caret position changed: " + event);
     }
 
     @Override
     public Rectangle getTextLocation(TextHitInfo offset) {
-        System.out.println("getTextLocation called with offset: " + offset);
         // Return the location of the text for input method purposes
-        Rectangle cursorBounds = view.getCursorBoundsFromDisplay();
-        if (cursorBounds == null) {
-            cursorBounds = new Rectangle(0, 0, 0, 0);
+        if (model.getModeName().equals("insert") || model.getModeName().equals("replace")) {
+            Rectangle cursorBounds = view.getCursorBoundsFromDisplay();
+            if (cursorBounds == null) {
+                cursorBounds = new Rectangle(0, 0, 0, 0);
+            }
+            return cursorBounds;
+        } else {
+            return new Rectangle(0, 0, 0, 0);
         }
-        return cursorBounds;
+
     }
 
     @Override
@@ -127,7 +122,7 @@ public class NvimInputMethodRequests implements InputMethodRequests, InputMethod
             FontMetrics fm = g.getFontMetrics();
             //g.setColor(Color.BLACK);
             g.drawString(currenText, cursorBounds.x, cursorBounds.y + fm.getAscent());
-            System.out.println("Painting current text: " + currenText + " at " + cursorBounds);
+            //System.out.println("Painting current text: " + currenText + " at " + cursorBounds);
         }
     }
 }

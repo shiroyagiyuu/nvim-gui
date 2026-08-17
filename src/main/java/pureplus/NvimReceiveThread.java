@@ -8,14 +8,17 @@ import org.msgpack.value.ValueType;
 import java.io.InputStream;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.ArrayList;
 
 public class NvimReceiveThread extends Thread
 {
     private MessageUnpacker unpacker;
     private NvimDrawModel   dmodel;
+    private ArrayList<NvimViewEventListener> viewListeners;
 
     public NvimReceiveThread(InputStream in) {
         unpacker = MessagePack.newDefaultUnpacker(in);
+        viewListeners = new ArrayList<>();
     }
 
     public void setDrawModel(NvimDrawModel model) {
@@ -297,7 +300,7 @@ public class NvimReceiveThread extends Thread
             int param_size = unpacker.unpackArrayHeader();
             String  mode = unpacker.unpackString();
             int     mode_idx = unpacker.unpackInt();
-            System.out.println("mode_change to " + mode + "("+mode_idx+")");
+            //System.out.println("mode_change to " + mode + "("+mode_idx+")");
             dmodel.setMode(mode_idx, mode);
         }
         case "busy_start" -> {
@@ -305,6 +308,14 @@ public class NvimReceiveThread extends Thread
         }
         case "busy_stop" -> {
             dmodel.setBusy(false);
+        }
+        case "option_set" -> {
+            for (int p=0; p<size-1; p++) {
+                int subparam_size = unpacker.unpackArrayHeader();
+                String option_name = unpacker.unpackString();
+                Object val = unpacker.unpackValue();
+                // do nothing
+            }                        
         }
         case "flush" -> {
             dmodel.flush();
@@ -316,6 +327,11 @@ public class NvimReceiveThread extends Thread
         case "mouse_on","mouse_off" -> {
             unpacker.unpackValue();
             // do nothing
+        }
+        case "set_title" -> {
+            int param_size = unpacker.unpackArrayHeader();
+            String title = unpacker.unpackString();
+            fireViewEventTitleChanged(title);
         }
         default -> {
             System.out.print( "Event: " + cmd);
@@ -370,6 +386,37 @@ public class NvimReceiveThread extends Thread
             }
             System.out.println();
         }
+        }
+    }
+
+
+    /**
+     * add view event listener
+     * @param listener
+     */
+    public void addViewEventListener(NvimViewEventListener listener) {
+        if (!viewListeners.contains(listener)) {
+            this.viewListeners.add(listener);
+        }
+    }
+
+    /** 
+     * remove view event listener
+     * @param listener
+     */
+    public void removeViewEventListener(NvimViewEventListener listener) {
+        if (viewListeners.contains(listener)) {
+            this.viewListeners.remove(listener);
+        }
+    }
+
+    /**
+     * fire title changed event
+     * @param title
+     */
+    private void fireViewEventTitleChanged(String title) {
+        for (NvimViewEventListener listener : viewListeners) {
+            listener.titleChanged(title);
         }
     }
 }

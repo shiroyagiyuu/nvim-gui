@@ -261,6 +261,7 @@ public class NvimDrawModel
     public void setMode(int mode, String mode_name) {
         this.mode = mode;
         this.modeName = mode_name;
+        fireDrawEvent(NvimDrawEventListener.EVENT_MODE_CHANGE);
     }
 
     /**
@@ -356,7 +357,7 @@ public class NvimDrawModel
      * flush DrawEvent
      */
     public void flush() {
-        fireDrawEvent(0);
+        fireDrawEvent(NvimDrawEventListener.EVENT_FLASH);
     }
 
     /**

@@ -12,7 +12,7 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.im.InputMethodRequests;
 
-public class NvimView extends JPanel implements NvimDrawEventListener
+public class NvimView extends JPanel implements NvimDrawEventListener,NvimViewEventListener
 {
     NvimDrawModel  model;
     NvimApi        api;
@@ -39,10 +39,13 @@ public class NvimView extends JPanel implements NvimDrawEventListener
                 if (cellSize == null) { return; }
 
                 Dimension comp_sz = getSize();
+                if (comp_sz.width <= 0 || comp_sz.height <= 0) { return; }
+
                 Dimension grid_size = model.getSize();
                 int new_gridw = comp_sz.width / cellSize.width;
                 int new_gridh = comp_sz.height / cellSize.height;
-                if (new_gridw != grid_size.width || new_gridh != grid_size.height) {
+                if ((new_gridw > 0 && new_gridh > 0) &&
+                    (new_gridw != grid_size.width || new_gridh != grid_size.height)) {
                      try {
                          api.uiTryResize(new_gridw, new_gridh);
                          resize_completed = false;
@@ -157,7 +160,22 @@ public class NvimView extends JPanel implements NvimDrawEventListener
     }
 
     public void drawEventOccurred(int event) {
-        repaint();
+        switch (event) {
+            case NvimDrawEventListener.EVENT_FLASH -> { repaint();}
+            case NvimDrawEventListener.EVENT_MODE_CHANGE -> { mode_changed(); }
+            default -> {
+                System.out.println("Unknown draw event: " + event);
+            }
+        }
+    }
+
+    private void mode_changed() {
+        String mode = model.getModeName();
+        if (mode.equals("insert") || mode.equals("replace")) {
+            enableInputMethods(true);
+        } else {
+            enableInputMethods(false);
+        }
     }
 
     JFrame  frm;
@@ -184,6 +202,13 @@ public class NvimView extends JPanel implements NvimDrawEventListener
     @Override
     public InputMethodRequests getInputMethodRequests() {
         return inputMethodListener;
+    }
+
+    @Override
+    public void titleChanged(String title) {
+        if (frm != null) {
+            frm.setTitle(title);
+        }
     }
 }
 
