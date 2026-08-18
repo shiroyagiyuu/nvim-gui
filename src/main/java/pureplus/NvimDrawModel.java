@@ -327,15 +327,16 @@ public class NvimDrawModel
      * @param coloff column offset
      */
     public void scroll(int top, int bottom, int left, int right, int rowoff, int coloff) {
-        System.out.println("scroll top:"+top+" bottom:"+bottom+" row:"+rowoff);
+        //System.out.println("scroll top:"+top+" bottom:"+bottom+" row:"+rowoff);
         Cell[][]  new_cells = new Cell[cells.length][cells[0].length];
         for (int row = 0; row<new_cells.length; row++) {
             for (int col = 0; col<new_cells[0].length; col++) {
-                if ((top-rowoff)<=row && row<(bottom-rowoff) &&
-                    (left-coloff)<=col && col<(right-coloff)) {
+                if ((top<=row) && (row<bottom) && (left<=col) && (col<right) &&
+                    (0<=row+rowoff) && (row+rowoff<cells.length) &&
+                    (0<=col+coloff) && (col+coloff<cells[0].length) ){
                     new_cells[row][col] = cells[row+rowoff][col+coloff];
                 } else {
-                    new_cells[row][col] = new Cell();
+                    new_cells[row][col] = cells[row][col];
                 }
             }
         }
