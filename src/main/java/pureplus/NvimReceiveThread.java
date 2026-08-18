@@ -83,6 +83,7 @@ public class NvimReceiveThread extends Thread
                 for (int j=0; j<ary_size; j++) {
                     int  cmd_size = unpacker.unpackArrayHeader();
                     String cmd = unpacker.unpackString();
+                    //System.out.println("cmd: "+cmd);
                     parseDrawEvent(cmd, cmd_size, unpacker);
                 }
             }
@@ -109,7 +110,7 @@ public class NvimReceiveThread extends Thread
                 }
             }
             //System.out.println("cell: text=\""+text+"\" hl_id="+hl_id+" rep="+repeat);
-            if (text.length()>1) { System.out.println("Warning!!: long text??"); }
+            if (text.length()>1) { System.out.println("Warning!!: long text?? ["+text+"]"); }
             for (int ic=0; ic<repeat; ic++) {
                 dmodel.setCell(row, col, text, hl_id);
                 col++;
@@ -304,9 +305,11 @@ public class NvimReceiveThread extends Thread
             dmodel.setMode(mode_idx, mode);
         }
         case "busy_start" -> {
+            int param_size = unpacker.unpackArrayHeader();
             dmodel.setBusy(true);
         }
         case "busy_stop" -> {
+            int param_size = unpacker.unpackArrayHeader();
             dmodel.setBusy(false);
         }
         case "option_set" -> {
