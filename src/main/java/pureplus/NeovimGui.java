@@ -3,14 +3,31 @@ package pureplus;
 import java.io.OutputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Properties;
+import java.io.File;
+import java.io.Reader;
+import java.io.Writer;
 
 public class NeovimGui
 {
     public static void main(String[] args) {
+        Properties   config = new Properties();
+        Properties  sysprop = System.getProperties();
+        File  configdir  = new File(sysprop.getProperty("user.home"),".config");
+        File  configfile = new File(configdir, "nvimgui.properties");
+        System.out.println("configfile:"+configfile.getPath());
+
+        if (configfile.exists()) {
+            try (Reader rd = new java.io.FileReader(configfile)) {
+                config.load(rd);
+            } catch (java.io.IOException ex) {
+                ex.printStackTrace();
+            }
+        }
 
         ArrayList<String> argList = new ArrayList<String>();
 
-        argList.add("nvim");
+        argList.add(config.getProperty("neovim","nvim"));
         argList.add("--embed");
         argList.add("--headless");
         if (args.length > 0) {
@@ -37,6 +54,7 @@ public class NeovimGui
             NvimApi   api = new NvimApi(out); 
 
             NvimView   view = new NvimView(model,api);
+            view.setConfig(config);
             model.addDrawEventListener(view);
             view.createFrame();
             NvimKeyAdapter  keyAdapter = new NvimKeyAdapter(api);
@@ -52,6 +70,16 @@ public class NeovimGui
         } catch (InterruptedException ex) {
             ex.printStackTrace();
         }
+
+        if (!configdir.exists()) {
+            configdir.mkdir();
+        }
+        try (Writer wt = new java.io.FileWriter(configfile)) {
+            config.store(wt, "nvimgui configs");
+        } catch (java.io.IOException ex) {
+            ex.printStackTrace();
+        }
+
         System.exit(result);
     }
 }

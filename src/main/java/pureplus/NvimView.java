@@ -11,6 +11,7 @@ import java.awt.Color;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.im.InputMethodRequests;
+import java.util.Properties;
 
 public class NvimView extends JPanel implements NvimDrawEventListener,NvimViewEventListener
 {
@@ -59,6 +60,12 @@ public class NvimView extends JPanel implements NvimDrawEventListener,NvimViewEv
 
         resize_completed = false;
 	}
+
+    public void setConfig(Properties config) {
+        String  fontname = config.getProperty("fontname","Monospaced");
+        String  fontsize = config.getProperty("fontsize","12");
+        setFont(new Font(fontname, Font.PLAIN, Integer.parseInt(fontsize)));
+    }
 
     private void calcPrefSize(Graphics g) {
         FontMetrics m = g.getFontMetrics();
