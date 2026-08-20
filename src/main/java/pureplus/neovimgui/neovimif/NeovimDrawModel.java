@@ -1,11 +1,11 @@
-package pureplus;
+package pureplus.neovimgui.neovimif;
 
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Color;
 import java.util.ArrayList;
 
-public class NvimDrawModel
+public class NeovimDrawModel
 {
     public class Cell
     {
@@ -142,9 +142,9 @@ public class NvimDrawModel
     int       mode;
     String    modeName;
     boolean   cursor_busy;
-    NvimModeInfo[]  modeInfos;
+    NeovimModeInfo[]  modeInfos;
 
-    ArrayList<NvimDrawEventListener>  drawlisteners;
+    ArrayList<NeovimDrawEventListener>  drawlisteners;
 
     public void setSize(int cols, int rows) {
         Cell[][]  newcells = new Cell[rows][cols];
@@ -261,7 +261,7 @@ public class NvimDrawModel
     public void setMode(int mode, String mode_name) {
         this.mode = mode;
         this.modeName = mode_name;
-        fireDrawEvent(NvimDrawEventListener.EVENT_MODE_CHANGE);
+        fireDrawEvent(NeovimDrawEventListener.EVENT_MODE_CHANGE);
     }
 
     /**
@@ -285,7 +285,7 @@ public class NvimDrawModel
      * @param mode_idx
      * @return
      */
-    public NvimModeInfo getModeInfo(int mode_idx) {
+    public NeovimModeInfo getModeInfo(int mode_idx) {
         if (this.modeInfos == null || mode_idx >= this.modeInfos.length) {
             return null;
         }
@@ -297,7 +297,7 @@ public class NvimDrawModel
      * @param mode_idx
      * @param modeInfo
      */
-    public void setModeInfo(int mode_idx, NvimModeInfo modeInfo) {
+    public void setModeInfo(int mode_idx, NeovimModeInfo modeInfo) {
         if (this.modeInfos == null || mode_idx >= this.modeInfos.length) {
             int newlen = ((mode_idx/8)+1)*8;
             this.modeInfos = java.util.Arrays.copyOf(modeInfos, newlen);
@@ -358,14 +358,14 @@ public class NvimDrawModel
      * flush DrawEvent
      */
     public void flush() {
-        fireDrawEvent(NvimDrawEventListener.EVENT_FLASH);
+        fireDrawEvent(NeovimDrawEventListener.EVENT_FLASH);
     }
 
     /**
      * Add DrawEventListener
      * @param l listener
      */
-    public void addDrawEventListener(NvimDrawEventListener l) {
+    public void addDrawEventListener(NeovimDrawEventListener l) {
         if (!drawlisteners.contains(l)) {
             drawlisteners.add(l);
         }
@@ -376,16 +376,16 @@ public class NvimDrawModel
      * @param event event type
      */
     public void fireDrawEvent(int event) {
-        for (NvimDrawEventListener l : drawlisteners) {
+        for (NeovimDrawEventListener l : drawlisteners) {
             l.drawEventOccurred(event);
         }
     }
 
-    public NvimDrawModel() {
+    public NeovimDrawModel() {
         this.hilights = new Hilight[32];
-        this.modeInfos = new NvimModeInfo[8];
+        this.modeInfos = new NeovimModeInfo[8];
         this.cursor = new Cursor();
-        this.drawlisteners = new ArrayList<NvimDrawEventListener>();
+        this.drawlisteners = new ArrayList<NeovimDrawEventListener>();
     }
 }
 

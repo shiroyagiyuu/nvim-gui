@@ -1,6 +1,6 @@
-package pureplus;
+package pureplus.neovimgui.neovimif;
 
-public class NvimModeInfo {
+public class NeovimModeInfo {
     int shape;
     int cell_percentage;
     int blinkWait, blinkOn, blinkOff;
@@ -10,9 +10,9 @@ public class NvimModeInfo {
     int mouseShape;
 
     /* cursor shapes */
-    final static int SHAPE_BLOCK = 0;
-    final static int SHAPE_HORIZONTAL = 1;
-    final static int SHAPE_VERTICAL = 2;
+    public final static int SHAPE_BLOCK = 0;
+    public final static int SHAPE_HORIZONTAL = 1;
+    public final static int SHAPE_VERTICAL = 2;
 
     /**
      * Set the shape of the cursor.

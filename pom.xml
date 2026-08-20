@@ -78,7 +78,7 @@
           <configuration>
             <archive>
               <manifest>
-                <mainClass>pureplus.NeovimGui</mainClass>
+                <mainClass>pureplus.neovimgui.NeovimGui</mainClass>
               </manifest>
             </archive>
           </configuration>
@@ -105,7 +105,7 @@
           <artifactId>exec-maven-plugin</artifactId>
           <version>1.2.1</version>
           <configuration>
-            <mainClass>pureplus.NeovimGui</mainClass>
+            <mainClass>pureplus.neovimgui.NeovimGui</mainClass>
           </configuration>
         </plugin>
       </plugins>

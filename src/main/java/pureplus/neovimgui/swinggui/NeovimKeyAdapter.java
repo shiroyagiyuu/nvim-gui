@@ -1,11 +1,13 @@
-package pureplus;
+package pureplus.neovimgui.swinggui;
 
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
-public class NvimKeyAdapter implements KeyListener
+import pureplus.neovimgui.neovimif.NeovimApi;
+
+public class NeovimKeyAdapter implements KeyListener
 {
-    NvimApi   api;
+    NeovimApi   api;
 
     public void keyTyped(KeyEvent evt) {
         String  keycode = null;
@@ -61,7 +63,7 @@ public class NvimKeyAdapter implements KeyListener
 
     public void keyPressed(KeyEvent evt) {}
 
-    public NvimKeyAdapter(NvimApi api) {
+    public NeovimKeyAdapter(NeovimApi api) {
         this.api = api;
     }
 }

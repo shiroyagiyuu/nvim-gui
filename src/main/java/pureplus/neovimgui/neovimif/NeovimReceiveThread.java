@@ -1,4 +1,4 @@
-package pureplus;
+package pureplus.neovimgui.neovimif;
 
 import org.msgpack.core.MessagePack;
 import org.msgpack.core.MessageUnpacker;
@@ -10,18 +10,18 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.ArrayList;
 
-public class NvimReceiveThread extends Thread
+public class NeovimReceiveThread extends Thread
 {
     private MessageUnpacker unpacker;
-    private NvimDrawModel   dmodel;
-    private ArrayList<NvimViewEventListener> viewListeners;
+    private NeovimDrawModel   dmodel;
+    private ArrayList<NeovimViewEventListener> viewListeners;
 
-    public NvimReceiveThread(InputStream in) {
+    public NeovimReceiveThread(InputStream in) {
         unpacker = MessagePack.newDefaultUnpacker(in);
         viewListeners = new ArrayList<>();
     }
 
-    public void setDrawModel(NvimDrawModel model) {
+    public void setDrawModel(NeovimDrawModel model) {
         dmodel = model;
     }
 
@@ -142,7 +142,7 @@ public class NvimReceiveThread extends Thread
                 int attr_size = unpacker.unpackArrayHeader();
                 int id = unpacker.unpackInt();
                 int map_size = unpacker.unpackMapHeader();
-                NvimDrawModel.Hilight hl = dmodel.getDefaultHilight();
+                NeovimDrawModel.Hilight hl = dmodel.getDefaultHilight();
                 for (int mi=0; mi<map_size; mi++) {
                     String  key = unpacker.unpackString();
                     if (key.equals("bold")) {
@@ -236,7 +236,7 @@ public class NvimReceiveThread extends Thread
             int map_ary = unpacker.unpackArrayHeader();
             for (int i=0; i<map_ary; i++) {
                 //System.out.println("ary:"+i);
-                NvimModeInfo  mode_info = new NvimModeInfo();
+                NeovimModeInfo  mode_info = new NeovimModeInfo();
                 int map_size = unpacker.unpackMapHeader();
                 for (int m=0; m<map_size; m++) {
                     String key = unpacker.unpackString();
@@ -257,9 +257,9 @@ public class NvimReceiveThread extends Thread
                     case "cursor_shape" -> {
                         String cursor_shape = unpacker.unpackString();
                         switch (cursor_shape) {
-                        case "block" -> mode_info.setShape(NvimModeInfo.SHAPE_BLOCK);
-                        case "horizontal" -> mode_info.setShape(NvimModeInfo.SHAPE_HORIZONTAL);
-                        case "vertical" -> mode_info.setShape(NvimModeInfo.SHAPE_VERTICAL);
+                        case "block" -> mode_info.setShape(NeovimModeInfo.SHAPE_BLOCK);
+                        case "horizontal" -> mode_info.setShape(NeovimModeInfo.SHAPE_HORIZONTAL);
+                        case "vertical" -> mode_info.setShape(NeovimModeInfo.SHAPE_VERTICAL);
                         default -> System.out.println("Warning!!: unknown cursor_shape="+cursor_shape);
                         }
                     }
@@ -397,7 +397,7 @@ public class NvimReceiveThread extends Thread
      * add view event listener
      * @param listener
      */
-    public void addViewEventListener(NvimViewEventListener listener) {
+    public void addViewEventListener(NeovimViewEventListener listener) {
         if (!viewListeners.contains(listener)) {
             this.viewListeners.add(listener);
         }
@@ -407,7 +407,7 @@ public class NvimReceiveThread extends Thread
      * remove view event listener
      * @param listener
      */
-    public void removeViewEventListener(NvimViewEventListener listener) {
+    public void removeViewEventListener(NeovimViewEventListener listener) {
         if (viewListeners.contains(listener)) {
             this.viewListeners.remove(listener);
         }
@@ -418,7 +418,7 @@ public class NvimReceiveThread extends Thread
      * @param title
      */
     private void fireViewEventTitleChanged(String title) {
-        for (NvimViewEventListener listener : viewListeners) {
+        for (NeovimViewEventListener listener : viewListeners) {
             listener.titleChanged(title);
         }
     }

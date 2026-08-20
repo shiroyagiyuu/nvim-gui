@@ -1,4 +1,4 @@
-package pureplus;
+package pureplus.neovimgui.neovimif;
 
 import org.msgpack.core.MessagePack;
 import org.msgpack.core.MessagePacker;
@@ -8,12 +8,12 @@ import java.io.IOException;
 
 import java.util.Map;
 
-public class NvimApi
+public class NeovimApi
 {
     OutputStream  out;
     int  msgid;
 
-    public NvimApi(OutputStream out) {
+    public NeovimApi(OutputStream out) {
         this.out = out;
         this.msgid = 0;
     }

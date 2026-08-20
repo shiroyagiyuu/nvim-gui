@@ -1,9 +1,16 @@
-package pureplus;
+package pureplus.neovimgui;
 
 import java.io.OutputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Properties;
+
+import pureplus.neovimgui.swinggui.NeovimKeyAdapter;
+import pureplus.neovimgui.swinggui.NeovimView;
+import pureplus.neovimgui.neovimif.NeovimApi;
+import pureplus.neovimgui.neovimif.NeovimDrawModel;
+import pureplus.neovimgui.neovimif.NeovimReceiveThread;
+
 import java.io.File;
 import java.io.Reader;
 import java.io.Writer;
@@ -44,20 +51,20 @@ public class NeovimGui
             OutputStream out = process.getOutputStream();
             InputStream in = process.getInputStream();
 
-            NvimDrawModel   model = new NvimDrawModel();
+            NeovimDrawModel   model = new NeovimDrawModel();
             model.setSize(80,24);
 
-            NvimReceiveThread th = new NvimReceiveThread(in);
+            NeovimReceiveThread th = new NeovimReceiveThread(in);
             th.setDrawModel(model);
             th.start();
 
-            NvimApi   api = new NvimApi(out); 
+            NeovimApi   api = new NeovimApi(out); 
 
-            NvimView   view = new NvimView(model,api);
+            NeovimView   view = new NeovimView(model,api);
             view.setConfig(config);
             model.addDrawEventListener(view);
             view.createFrame();
-            NvimKeyAdapter  keyAdapter = new NvimKeyAdapter(api);
+            NeovimKeyAdapter  keyAdapter = new NeovimKeyAdapter(api);
             view.addKeyListener(keyAdapter);
 
             th.addViewEventListener(view);

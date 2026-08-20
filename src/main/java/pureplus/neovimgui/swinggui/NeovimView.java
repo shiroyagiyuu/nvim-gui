@@ -1,6 +1,13 @@
-package pureplus;
+package pureplus.neovimgui.swinggui;
 
 import javax.swing.*;
+
+import pureplus.neovimgui.neovimif.NeovimApi;
+import pureplus.neovimgui.neovimif.NeovimDrawEventListener;
+import pureplus.neovimgui.neovimif.NeovimDrawModel;
+import pureplus.neovimgui.neovimif.NeovimModeInfo;
+import pureplus.neovimgui.neovimif.NeovimViewEventListener;
+
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -13,16 +20,16 @@ import java.awt.event.ComponentEvent;
 import java.awt.im.InputMethodRequests;
 import java.util.Properties;
 
-public class NvimView extends JPanel implements NvimDrawEventListener,NvimViewEventListener
+public class NeovimView extends JPanel implements NeovimDrawEventListener,NeovimViewEventListener
 {
-    NvimDrawModel  model;
-    NvimApi        api;
+    NeovimDrawModel  model;
+    NeovimApi        api;
     Dimension      cellSize;
     int            ascent;
     boolean        resize_completed;
-    NvimInputMethodRequests inputMethodListener;
+    NeovimInputMethodRequests inputMethodListener;
 
-	public NvimView(NvimDrawModel model, NvimApi api) {
+	public NeovimView(NeovimDrawModel model, NeovimApi api) {
         this.model = model;
         this.api = api;
         setFont(new Font("Monospaced", Font.PLAIN, 12));
@@ -31,7 +38,7 @@ public class NvimView extends JPanel implements NvimDrawEventListener,NvimViewEv
         setFocusable(true);
         setFocusTraversalKeysEnabled(false);
 
-        inputMethodListener = new NvimInputMethodRequests(this, model, api);
+        inputMethodListener = new NeovimInputMethodRequests(this, model, api);
         addInputMethodListener(inputMethodListener);
 
         addComponentListener(new ComponentAdapter() {
@@ -82,11 +89,11 @@ public class NvimView extends JPanel implements NvimDrawEventListener,NvimViewEv
         redrawFrame();    
     }
 
-    private void paintCell(Graphics g, NvimDrawModel.Cell cell, Rectangle cellBounds) {
+    private void paintCell(Graphics g, NeovimDrawModel.Cell cell, Rectangle cellBounds) {
         int str_y = cellBounds.y + ascent;
 
         if (!cell.getText().isEmpty()) {
-            NvimDrawModel.Hilight  hl = model.getHilight(cell.getHilight());
+            NeovimDrawModel.Hilight  hl = model.getHilight(cell.getHilight());
             Color  fgcol,bgcol;
             if (hl != null) {
                 fgcol = hl.getForeground();
@@ -115,22 +122,22 @@ public class NvimView extends JPanel implements NvimDrawEventListener,NvimViewEv
         if (!model.isBusy()) {
             Rectangle  cursorBounds = getCursorBounds();
             int  mode = model.getMode();
-            NvimModeInfo modeInfo = model.getModeInfo(mode);
+            NeovimModeInfo modeInfo = model.getModeInfo(mode);
 
             if (modeInfo != null) {
                 int   shape = modeInfo.getShape();
                 switch (shape) {
-                    case NvimModeInfo.SHAPE_BLOCK -> {
+                    case NeovimModeInfo.SHAPE_BLOCK -> {
                         g.setXORMode(Color.black);
                         g.fillRect(cursorBounds.x, cursorBounds.y, cursorBounds.width, cursorBounds.height);
                     }
-                    case NvimModeInfo.SHAPE_HORIZONTAL -> {
+                    case NeovimModeInfo.SHAPE_HORIZONTAL -> {
                         int  height = (cursorBounds.height * modeInfo.getCellPercentage()) / 100;
                         int  y = cursorBounds.y + cursorBounds.height - height;
                         g.setXORMode(Color.black);
                         g.fillRect(cursorBounds.x, y, cursorBounds.width, height);
                     }
-                    case NvimModeInfo.SHAPE_VERTICAL -> {
+                    case NeovimModeInfo.SHAPE_VERTICAL -> {
                         int  width = (cursorBounds.width * modeInfo.getCellPercentage()) / 100;
                         g.setXORMode(Color.black);
                         g.fillRect(cursorBounds.x, cursorBounds.y, width, cursorBounds.height);
@@ -147,7 +154,7 @@ public class NvimView extends JPanel implements NvimDrawEventListener,NvimViewEv
         Rectangle  cellBounds = new Rectangle(0, 0, cellSize.width, cellSize.height);
         Dimension  gsize = model.getSize();
 
-        g.setColor(model.background);
+        g.setColor(model.getBackground());
         Rectangle   clip = g.getClipBounds();
         g.fillRect(clip.x, clip.y, clip.width, clip.height);
 
@@ -155,7 +162,7 @@ public class NvimView extends JPanel implements NvimDrawEventListener,NvimViewEv
             cellBounds.y = row * cellBounds.height;
             for (int col = 0; col < gsize.width; col++) {
                 cellBounds.x = col * cellBounds.width;
-                NvimDrawModel.Cell  cell = model.getCell(row,col);
+                NeovimDrawModel.Cell  cell = model.getCell(row,col);
                 if (cell != null) {
                     paintCell(g, cell, cellBounds);
                 }
@@ -170,7 +177,7 @@ public class NvimView extends JPanel implements NvimDrawEventListener,NvimViewEv
 
     public Rectangle getCursorBounds() {
         if (cellSize==null) { return new Rectangle(0, 0, 0, 0); }
-        NvimDrawModel.Cursor  cursor = model.getCursor();
+        NeovimDrawModel.Cursor  cursor = model.getCursor();
         Rectangle  cursorBounds = new Rectangle(cursor.getColumn() * cellSize.width,
                                             cursor.getRow() * cellSize.height,
                                             cellSize.width,
@@ -181,7 +188,7 @@ public class NvimView extends JPanel implements NvimDrawEventListener,NvimViewEv
 
     public Rectangle getCursorBoundsFromDisplay() {
         if (cellSize==null) { return new Rectangle(0, 0, 0, 0); }
-        NvimDrawModel.Cursor  cursor = model.getCursor();
+        NeovimDrawModel.Cursor  cursor = model.getCursor();
         Point p = new Point(cursor.getColumn() * cellSize.width,
                         cursor.getRow() * cellSize.height);
         SwingUtilities.convertPointToScreen(p, this);
@@ -191,8 +198,8 @@ public class NvimView extends JPanel implements NvimDrawEventListener,NvimViewEv
 
     public void drawEventOccurred(int event) {
         switch (event) {
-            case NvimDrawEventListener.EVENT_FLASH -> { repaint();}
-            case NvimDrawEventListener.EVENT_MODE_CHANGE -> { mode_changed(); }
+            case NeovimDrawEventListener.EVENT_FLASH -> { repaint();}
+            case NeovimDrawEventListener.EVENT_MODE_CHANGE -> { mode_changed(); }
             default -> {
                 System.out.println("Unknown draw event: " + event);
             }
@@ -237,6 +244,9 @@ public class NvimView extends JPanel implements NvimDrawEventListener,NvimViewEv
     @Override
     public void titleChanged(String title) {
         if (frm != null) {
+            if (title.length()==0) {
+                title = "Neovim";
+            }
             frm.setTitle(title);
         }
     }

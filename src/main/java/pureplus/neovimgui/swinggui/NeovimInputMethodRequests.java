@@ -1,4 +1,4 @@
-package pureplus;
+package pureplus.neovimgui.swinggui;
 
 import java.awt.event.InputMethodListener;
 import java.awt.event.InputMethodEvent;
@@ -7,16 +7,20 @@ import java.awt.font.TextHitInfo;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.text.AttributedCharacterIterator;
+
+import pureplus.neovimgui.neovimif.NeovimApi;
+import pureplus.neovimgui.neovimif.NeovimDrawModel;
+
 import java.awt.FontMetrics;
 
-public class NvimInputMethodRequests implements InputMethodRequests, InputMethodListener
+public class NeovimInputMethodRequests implements InputMethodRequests, InputMethodListener
 {
-    private NvimView view;
-    private NvimDrawModel model;
-    private NvimApi api;
+    private NeovimView view;
+    private NeovimDrawModel model;
+    private NeovimApi api;
     private String  currentText;
 
-    public NvimInputMethodRequests(NvimView view, NvimDrawModel model, NvimApi api) {
+    public NeovimInputMethodRequests(NeovimView view, NeovimDrawModel model, NeovimApi api) {
         this.view = view;
         this.model = model;
         this.api = api;

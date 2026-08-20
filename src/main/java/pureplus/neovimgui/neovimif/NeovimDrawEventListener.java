@@ -1,6 +1,6 @@
-package pureplus;
+package pureplus.neovimgui.neovimif;
 
-public interface NvimDrawEventListener
+public interface NeovimDrawEventListener
 {
 	final static int EVENT_FLASH = 1;
 	final static int EVENT_MODE_CHANGE = 2;
