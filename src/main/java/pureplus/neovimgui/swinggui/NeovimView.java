@@ -17,15 +17,14 @@ import java.awt.Color;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.im.InputMethodRequests;
-import java.util.Properties;
 
 public class NeovimView extends JPanel implements NeovimDrawEventListener
 {
     NeovimDrawModel  model;
     NeovimApi        api;
     Dimension      cellSize;
+    Font           baseFont, boldFont, italicFont, boldItalicFont;
     int            ascent;
-    boolean        resize_completed;
     NeovimInputMethodRequests  inputMethodListener;
     JFrame         frm;
 
@@ -56,41 +55,55 @@ public class NeovimView extends JPanel implements NeovimDrawEventListener
                     (new_gridw != grid_size.width || new_gridh != grid_size.height)) {
                      try {
                          api.uiTryResize(new_gridw, new_gridh);
-                         resize_completed = false;
                      } catch (java.io.IOException ex) {
                          ex.printStackTrace();
                      }
                 }
-                //redrawFrame();
             }
         });
-
-        resize_completed = false;
 	}
 
     public void setFrame(JFrame frm) {
         this.frm = frm;
     }
 
-    public void setConfig(Properties config) {
-        String  fontname = config.getProperty("fontname","Monospaced");
-        String  fontsize = config.getProperty("fontsize","12");
-        setFont(new Font(fontname, Font.PLAIN, Integer.parseInt(fontsize)));
+    public void setFontSet(String fontName, int fontSize) {
+        baseFont = new Font(fontName, Font.PLAIN, fontSize);
+        boldFont = new Font(fontName, Font.BOLD, fontSize);
+        italicFont = new Font(fontName, Font.ITALIC, fontSize);
+        boldItalicFont = new Font(fontName, Font.BOLD | Font.ITALIC, fontSize);
+        setFont(baseFont);
+        cellSize = null;
+        calcCellSize();
     }
 
-    private void calcPrefSize(Graphics g) {
-        FontMetrics m = g.getFontMetrics();
+    private void calcCellSize() {
+        Graphics g = getGraphics();
+        if (g != null) {
+            calcCellSize(g);
+            g.dispose();
+        }
+    }
+
+    private void calcCellSize(Graphics g) {
+        FontMetrics m = g.getFontMetrics(baseFont);
         int  cellw = m.charWidth('W');
         int  cellh = m.getHeight();
         this.cellSize = new Dimension(cellw,cellh);
         this.ascent = m.getAscent();
+    }
 
+    @Override
+    public Dimension getPreferredSize() {
+        if (cellSize==null) {
+            calcCellSize();
+        }
         Dimension modelSize = model.getSize();
-        int  vieww = cellw * modelSize.width;
-        int  viewh = cellh * modelSize.height;
-        setPreferredSize(new Dimension(vieww, viewh));
-    
-        redrawFrame();
+
+        int  vieww = cellSize.width * modelSize.width;
+        int  viewh = cellSize.height * modelSize.height;
+
+        return new Dimension(vieww, viewh);
     }
 
     private void paintCell(Graphics g, NeovimDrawModel.Cell cell, Rectangle cellBounds) {
@@ -154,7 +167,7 @@ public class NeovimView extends JPanel implements NeovimDrawEventListener
     @Override
     public void paint(Graphics g) {
         g.setFont(getFont());
-        if (cellSize==null || !resize_completed) { calcPrefSize(g); }
+        if (cellSize==null) { calcCellSize(g); }
         Rectangle  cellBounds = new Rectangle(0, 0, cellSize.width, cellSize.height);
         Dimension  gsize = model.getSize();
 
@@ -217,14 +230,6 @@ public class NeovimView extends JPanel implements NeovimDrawEventListener
         } else {
             enableInputMethods(false);
         }
-    }
-
-    public void redrawFrame() {
-        SwingUtilities.invokeLater(() -> {
-            frm.pack();
-            resize_completed = true;
-            requestFocusInWindow();
-        });
     }
 
     @Override

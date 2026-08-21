@@ -102,7 +102,13 @@ public class NeovimApp
             NeovimApi   api = new NeovimApi(out); 
 
             NeovimView   view = new NeovimView(model,api);
-            view.setConfig(config);
+            try {
+                String  fontname = config.getProperty(KEY_FONTNAME);
+                int     fontsize = Integer.parseInt(config.getProperty(KEY_FONTSIZE));
+                view.setFontSet(fontname, fontsize);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
             model.addDrawEventListener(view);
             createFrame(view);
             NeovimKeyAdapter  keyAdapter = new NeovimKeyAdapter(api);
