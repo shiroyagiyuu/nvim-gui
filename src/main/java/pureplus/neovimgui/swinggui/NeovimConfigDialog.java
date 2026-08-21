@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.GraphicsEnvironment;
-import pureplus.neovimgui.NeovimGui;
+import pureplus.neovimgui.NeovimApp;
 
 public class NeovimConfigDialog extends JPanel
 {
@@ -40,7 +40,7 @@ public class NeovimConfigDialog extends JPanel
         JPanel exePane = new JPanel();
         exePane.add(new JLabel("Neovim path:"));
         executePathField = new JTextField(40);
-        executePathField.setText(config.getProperty(NeovimGui.KEY_EXECUTE));
+        executePathField.setText(config.getProperty(NeovimApp.KEY_EXECUTE));
         exePane.add(executePathField);
         add(exePane);
 
@@ -48,11 +48,11 @@ public class NeovimConfigDialog extends JPanel
         fontNamePane.add(new JLabel("FontName:"));
         String[]  monofonts = getFontList();
         fontNameField = new JComboBox<>(monofonts);
-        fontNameField.setSelectedItem(config.getProperty(NeovimGui.KEY_FONTNAME));
+        fontNameField.setSelectedItem(config.getProperty(NeovimApp.KEY_FONTNAME));
         fontNamePane.add(fontNameField);
         fontNamePane.add(new JLabel("size:"));
         fontSizeField = new JTextField(4);
-        fontSizeField.setText(config.getProperty(NeovimGui.KEY_FONTSIZE));
+        fontSizeField.setText(config.getProperty(NeovimApp.KEY_FONTSIZE));
         fontNamePane.add(fontSizeField);
         add(fontNamePane);
 
@@ -95,9 +95,9 @@ public class NeovimConfigDialog extends JPanel
         try {
             int  fontsize = Integer.parseInt(fontSizeField.getText());
 
-            config.setProperty(NeovimGui.KEY_EXECUTE, executePathField.getText());
-            config.setProperty(NeovimGui.KEY_FONTNAME, (String)fontNameField.getSelectedItem());
-            config.setProperty(NeovimGui.KEY_FONTSIZE, Integer.toString(fontsize));
+            config.setProperty(NeovimApp.KEY_EXECUTE, executePathField.getText());
+            config.setProperty(NeovimApp.KEY_FONTNAME, (String)fontNameField.getSelectedItem());
+            config.setProperty(NeovimApp.KEY_FONTSIZE, Integer.toString(fontsize));
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -115,9 +115,9 @@ public class NeovimConfigDialog extends JPanel
 
     public static void main(String[] args) {
         Properties  config = new Properties();
-        config.setProperty(NeovimGui.KEY_EXECUTE, "nvim");
-        config.setProperty(NeovimGui.KEY_FONTNAME, Font.MONOSPACED);
-        config.setProperty(NeovimGui.KEY_FONTSIZE, "12");
+        config.setProperty(NeovimApp.KEY_EXECUTE, "nvim");
+        config.setProperty(NeovimApp.KEY_FONTNAME, Font.MONOSPACED);
+        config.setProperty(NeovimApp.KEY_FONTSIZE, "12");
         NeovimConfigDialog config_dialog = new NeovimConfigDialog(config);
         int  result = config_dialog.openDialog(null);
 

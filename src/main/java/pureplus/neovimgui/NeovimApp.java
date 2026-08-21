@@ -24,7 +24,7 @@ import java.io.File;
 import java.io.Reader;
 import java.io.Writer;
 
-public class NeovimGui
+public class NeovimApp
 {
     Properties   config;
     public final static String KEY_EXECUTE = "neovim";
@@ -35,7 +35,7 @@ public class NeovimGui
     File   configfile;
     JFrame frame;
 
-    NeovimGui() {
+    NeovimApp() {
         config = new Properties();
         config.setProperty(KEY_EXECUTE, "nvim");
         config.setProperty(KEY_FONTNAME, java.awt.Font.MONOSPACED);
@@ -172,7 +172,7 @@ public class NeovimGui
     }
 
     public static void main(String[] args) {
-        NeovimGui  app = new NeovimGui();
+        NeovimApp  app = new NeovimApp();
         app.loadConfig();        
 
         ArrayList<String> argList = new ArrayList<String>();
