@@ -113,15 +113,32 @@ public class NeovimView extends JPanel implements NeovimDrawEventListener
             NeovimDrawModel.Hilight  hl = model.getHilight(cell.getHilight());
             Color  fgcol,bgcol;
             if (hl != null) {
-                fgcol = hl.getForeground();
-                bgcol = hl.getBackground();
+                if (hl.isReverse()) {
+                    fgcol = hl.getBackground();
+                    bgcol = hl.getForeground();
+                } else {
+                    fgcol = hl.getForeground();
+                    bgcol = hl.getBackground();
+                }
+
                 if (fgcol == null) {
                     fgcol = model.getForeground();
                 }
                 if (bgcol == null) {
                     bgcol = model.getBackground();
                 }
-                g.setFont(hl.getFont());
+
+                if (hl.isBold()) {
+                    if (hl.isItalic()) {
+                        g.setFont(boldItalicFont);
+                    } else {
+                        g.setFont(boldFont);
+                    }
+                } else if (hl.isItalic()) {
+                    g.setFont(italicFont);
+                } else {
+                    g.setFont(baseFont);
+                }
             } else {
                     fgcol = model.getForeground();
                     bgcol = model.getBackground();
@@ -132,6 +149,10 @@ public class NeovimView extends JPanel implements NeovimDrawEventListener
 
             g.setColor(fgcol);
             g.drawString(cell.getText(), cellBounds.x, str_y);
+
+            if (hl.isUnderline()) {
+                g.drawLine(cellBounds.x, str_y, cellBounds.x + cellBounds.width, str_y);
+            }
         }
     }
 

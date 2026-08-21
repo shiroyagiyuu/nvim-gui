@@ -7,7 +7,6 @@ import org.msgpack.value.ValueType;
 
 import java.io.InputStream;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.ArrayList;
 
 public class NeovimReceiveThread extends Thread
@@ -46,7 +45,7 @@ public class NeovimReceiveThread extends Thread
                         parseResponse(msg_size-1, unpacker);
                     } else if (messageType==2) {
                         // Notification
-                        parseNotifycation(msg_size-1, unpacker);
+                        parseNotification(msg_size-1, unpacker);
                     } else {
             	        throw new IOException( "Unexpected message: " + messageType);
                     }
@@ -74,7 +73,15 @@ public class NeovimReceiveThread extends Thread
         }
     }
 
-    private void parseNotifycation(int size, MessageUnpacker unpacker) throws IOException {
+    private boolean checkParam(String cmd, int got_size, int need_size) {
+        if (got_size != need_size) {
+            System.err.println("warning: param["+cmd+"] size is not needs: param="+got_size+" need="+need_size);
+            return false;
+        }
+        return true;
+    }
+
+    private void parseNotification(int size, MessageUnpacker unpacker) throws IOException {
         String method = unpacker.unpackString();
 
         if (method.equals("redraw")) { 
@@ -123,7 +130,8 @@ public class NeovimReceiveThread extends Thread
         case "grid_line" -> {
             for (int i=0; i<size-1; i++) {
                 int cmd_size = unpacker.unpackArrayHeader();
-                int grid = unpacker.unpackInt();
+                checkParam("grid_line", cmd_size, 5);
+                unpacker.unpackInt(); //grid is not use
                 int row  = unpacker.unpackInt();
                 int col  = unpacker.unpackInt();
                 //System.out.println("Start Grid: grid="+grid+" row="+row+" col="+col);
@@ -132,46 +140,79 @@ public class NeovimReceiveThread extends Thread
                 parseCell(row, col, unpacker);
 
                 boolean wrap = unpacker.unpackBoolean();
-                //System.out.println("end Grid: wrap="+wrap);
+                if (wrap) {
+                    System.out.println("end Grid: wrap="+wrap);
+                }
                 //dlistener.endGridLine(wrap);
             }
         }
         case "hl_attr_define" -> {
-            System.out.println("hl_attr");
+            //System.out.println("hl_attr");
             for (int i=0; i<size-1; i++) {
                 int attr_size = unpacker.unpackArrayHeader();
+                checkParam("hl_attr_define", attr_size, 4);
                 int id = unpacker.unpackInt();
                 int map_size = unpacker.unpackMapHeader();
                 NeovimDrawModel.Hilight hl = dmodel.getDefaultHilight();
                 for (int mi=0; mi<map_size; mi++) {
                     String  key = unpacker.unpackString();
-                    if (key.equals("bold")) {
-                        boolean bold = unpacker.unpackBoolean();
-                        hl.setBold(bold);
-                    } else if (key.equals("italic")) {
-                        boolean italic = unpacker.unpackBoolean();
-                        hl.setItalic(italic);
-                    } else if (key.equals("foreground")) {
-                        int fgcolor = unpacker.unpackInt();
-                        hl.setForeground(fgcolor);
-                    } else if (key.equals("background")) {
-                        int bgcolor = unpacker.unpackInt();
-                        hl.setBackground(bgcolor);
-                    } else if (key.equals("special")) {
-                        int spcolor = unpacker.unpackInt();
-                        hl.setSpecialColor(spcolor);
-                    } else if (key.equals("reverse")) {
-                        boolean reverse = unpacker.unpackBoolean();
-                        hl.setReverse(reverse);
-                    } else if (key.equals("underline")) {
-                        boolean underline = unpacker.unpackBoolean();
-                        hl.setUnderline(underline);
-                    } else if (key.equals("strikethrough")) {
-                        boolean strikethrough = unpacker.unpackBoolean();
-                        hl.setStrikethrough(strikethrough);
-                    } else { 
-                        Object  value = unpacker.unpackValue();
-                        System.out.println("id:"+id+" key:"+key+" val:"+value);
+                    switch (key) {
+                        case "bold" -> {
+                            boolean bold = unpacker.unpackBoolean();
+                            hl.setBold(bold);
+                        }
+                        case "italic" -> {
+                            boolean italic = unpacker.unpackBoolean();
+                            hl.setItalic(italic);
+                        }
+                        case "foreground" -> {
+                            int fgcolor = unpacker.unpackInt();
+                            hl.setForeground(fgcolor);
+                        }
+                        case "background" -> {
+                            int bgcolor = unpacker.unpackInt();
+                            hl.setBackground(bgcolor);
+                        }
+                        case "special" -> {
+                            int spcolor = unpacker.unpackInt();
+                            hl.setSpecialColor(spcolor);
+                        } 
+                        case "reverse" -> {
+                            boolean reverse = unpacker.unpackBoolean();
+                            hl.setReverse(reverse);
+                        }
+                        case "underline" -> {
+                            boolean underline = unpacker.unpackBoolean();
+                            hl.setUnderline(underline);
+                        }
+                        case "strikethrough" -> {
+                            boolean strikethrough = unpacker.unpackBoolean();
+                            hl.setStrikethrough(strikethrough);
+                        }
+                        case "underdouble" -> {
+                            boolean underdouble = unpacker.unpackBoolean();
+                            hl.setUnderDouble(underdouble);
+                        }
+                        case "undercurl" -> {
+                            boolean undercurl = unpacker.unpackBoolean();
+                            hl.setUndercurl(undercurl);
+                        }
+                        case "nocombine" -> {
+                            boolean nocombine = unpacker.unpackBoolean();
+                            hl.setNocombine(nocombine);
+                        }
+                        case "blend" -> {
+                            int blend = unpacker.unpackInt();
+                            hl.setBlend(blend);
+                        }
+                        case "url" -> {
+                            String url = unpacker.unpackString();
+                            hl.setURL(url);
+                        }
+                        default -> { 
+                            Object  value = unpacker.unpackValue();
+                            System.out.println("hl_attr id:"+id+" key:"+key+" val:"+value);
+                        }
                     }
                     dmodel.setHilight(id, hl);
                 }
@@ -187,6 +228,7 @@ public class NeovimReceiveThread extends Thread
         }
         case "default_colors_set" -> {
             int param_size = unpacker.unpackArrayHeader();
+            checkParam("default_colors_set", param_size, 5);
             int fgcolor = unpacker.unpackInt();
             int bgcolor = unpacker.unpackInt();
             int spcolor = unpacker.unpackInt();
@@ -197,6 +239,7 @@ public class NeovimReceiveThread extends Thread
         }
         case "grid_cursor_goto" -> {
             int param_size = unpacker.unpackArrayHeader();
+            checkParam("grid_cursor_goto", param_size, 3);
             int grid = unpacker.unpackInt();
             int row  = unpacker.unpackInt();
             int col  = unpacker.unpackInt();
@@ -205,7 +248,8 @@ public class NeovimReceiveThread extends Thread
         }
         case "grid_scroll" -> {
             int param_size = unpacker.unpackArrayHeader();
-            int grid  = unpacker.unpackInt();
+            checkParam("grid_scroll", param_size, 7);
+            unpacker.unpackInt(); //grid is not use
             int top   = unpacker.unpackInt();
             int bot   = unpacker.unpackInt();
             int left  = unpacker.unpackInt();
@@ -217,7 +261,8 @@ public class NeovimReceiveThread extends Thread
         }
         case "grid_resize" -> {
             int param_size = unpacker.unpackArrayHeader();
-            int grid  = unpacker.unpackInt();
+            checkParam("grid_resize", param_size, 3);
+            unpacker.unpackInt(); //grid is not use
             int width = unpacker.unpackInt();
             int height= unpacker.unpackInt();
 
@@ -225,14 +270,16 @@ public class NeovimReceiveThread extends Thread
         }
         case "grid_clear" -> {
             int param_size = unpacker.unpackArrayHeader();
-            int grid  = unpacker.unpackInt();
+            checkParam("grid_clear", param_size, 1);
+            unpacker.unpackInt(); //grid is not use
 
             dmodel.clear();
         }
         case "mode_info_set" -> {
             //System.out.println("mode_info_set");
             int param_size = unpacker.unpackArrayHeader();
-            boolean  cursor_style_enabled = unpacker.unpackBoolean();
+            checkParam("mode_info_set", param_size, 2);
+            unpacker.unpackBoolean(); //cursor style enabled is not use
             int map_ary = unpacker.unpackArrayHeader();
             for (int i=0; i<map_ary; i++) {
                 //System.out.println("ary:"+i);
@@ -285,7 +332,7 @@ public class NeovimReceiveThread extends Thread
                     }
                     case "mouse_shape" -> {
                         int mouse_shape = unpacker.unpackInt();
-                        //mode_info.setMouseShape(mouse_shape);
+                        mode_info.setMouseShape(mouse_shape);
                     }
                     default -> {
                         Object value = unpacker.unpackValue();
@@ -299,6 +346,7 @@ public class NeovimReceiveThread extends Thread
         }
         case "mode_change" -> {
             int param_size = unpacker.unpackArrayHeader();
+            checkParam("mode_change", param_size, 2);
             String  mode = unpacker.unpackString();
             int     mode_idx = unpacker.unpackInt();
             //System.out.println("mode_change to " + mode + "("+mode_idx+")");
@@ -306,19 +354,34 @@ public class NeovimReceiveThread extends Thread
         }
         case "busy_start" -> {
             int param_size = unpacker.unpackArrayHeader();
+            checkParam("busy_start", param_size, 0);
             dmodel.setBusy(true);
         }
         case "busy_stop" -> {
             int param_size = unpacker.unpackArrayHeader();
+            checkParam("busy_stop", param_size, 0);
             dmodel.setBusy(false);
         }
         case "option_set" -> {
             for (int p=0; p<size-1; p++) {
                 int subparam_size = unpacker.unpackArrayHeader();
-                String option_name = unpacker.unpackString();
-                Object val = unpacker.unpackValue();
+                checkParam("option set (sub)", subparam_size, 2);
+                unpacker.unpackString(); //option_name is not use
+                unpacker.unpackValue(); // option value is not use
                 // do nothing
             }                        
+        }
+        case "chdir" -> {
+            int param_size = unpacker.unpackArrayHeader();
+            checkParam("chdir", param_size, 1);
+            String  dir = unpacker.unpackString();
+            dmodel.setCurrentDir(dir);
+        }
+        case "set_icon" -> {
+            int param_size = unpacker.unpackArrayHeader();
+            checkParam("set_icon", param_size, 1);
+            String   icon = unpacker.unpackString();
+            if (icon.length()>0) { System.out.println("icon=" + icon); }
         }
         case "flush" -> {
             dmodel.flush();
@@ -333,6 +396,7 @@ public class NeovimReceiveThread extends Thread
         }
         case "set_title" -> {
             int param_size = unpacker.unpackArrayHeader();
+            checkParam("set_title", param_size, 1);
             String title = unpacker.unpackString();
             fireViewEventTitleChanged(title);
         }
@@ -347,11 +411,13 @@ public class NeovimReceiveThread extends Thread
         }
     }
 
+    /* not use
     private void parseDrawCellEvent(String cmd, int size, MessageUnpacker unpacker) throws IOException {
         switch (cmd) {
         case "cursor_goto" -> {
             int  row, col;
             int  arg_size = unpacker.unpackArrayHeader();
+            checkParam("cursor_goto", arg_size, 2);
             
             row = unpacker.unpackInt();
             col = unpacker.unpackInt();
@@ -363,6 +429,7 @@ public class NeovimReceiveThread extends Thread
             StringBuilder  sb = new StringBuilder();
             for (int i=0; i<size-1; i++) {
                 int  str_size = unpacker.unpackArrayHeader();
+                checkParam("put value", str_size, 1);
                 String str = unpacker.unpackString();
                 sb.append(str);
             }
@@ -371,6 +438,7 @@ public class NeovimReceiveThread extends Thread
         }
         case "highlight_set" -> {
             int  arg_size = unpacker.unpackArrayHeader();
+            checkParam("highlight_set", arg_size, 2);
             int  attr_size = unpacker.unpackMapHeader();
             HashMap<String,Object>   attrs = new HashMap<String,Object>();
             for (int i=0; i<attr_size; i++) {
@@ -391,6 +459,7 @@ public class NeovimReceiveThread extends Thread
         }
         }
     }
+    */
 
 
     /**

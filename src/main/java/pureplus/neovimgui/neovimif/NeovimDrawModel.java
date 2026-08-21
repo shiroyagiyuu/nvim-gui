@@ -1,7 +1,6 @@
 package pureplus.neovimgui.neovimif;
 
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.Color;
 import java.util.ArrayList;
 
@@ -32,23 +31,33 @@ public class NeovimDrawModel
 
     public class Hilight
     {
-        private Font   font;
         private Color  foreground;
         private Color  background;
         private Color  special_color;
+        private boolean bold;
+        private boolean italic;
         private boolean reverse;
         private boolean underline;
         private boolean strikethrough;
+        private boolean undercurl;
+        private boolean nocombine;
+        private boolean underdouble;
+        private int     blend;
+        private String  url;
 
-        public Hilight(Font font, Color fg, Color bg, Color sp) {
-            this.font = font;
+        public Hilight(Color fg, Color bg, Color sp) {
             this.foreground = fg;
             this.background = bg;
             this.special_color = sp;
-        }
-
-        public Font getFont() {
-            return this.font;
+            this.bold = false;
+            this.italic = false;
+            this.reverse = false;
+            this.underline = false;
+            this.strikethrough = false;
+            this.undercurl = false;
+            this.nocombine = false;
+            this.blend = 100;
+            this.url = null;
         }
 
         public Color getForeground() {
@@ -75,20 +84,20 @@ public class NeovimDrawModel
             this.special_color = new Color(col);
         }
 
+        public boolean isBold() {
+            return this.bold;
+        }
+
         public void setBold(boolean b) {
-            if (b) {
-                this.font = font.deriveFont(Font.BOLD);
-            } else {
-                this.font = font.deriveFont(Font.PLAIN);
-            }
+            this.bold = b;
+        }
+
+        public boolean isItalic() {
+            return this.italic;
         }
 
         public void setItalic(boolean b) {
-            if (b) {
-                this.font = font.deriveFont(Font.ITALIC);
-            } else {
-                this.font = font.deriveFont(Font.PLAIN);
-            }
+            this.italic = b;
         }
 
         public boolean isUnderline() {
@@ -113,6 +122,46 @@ public class NeovimDrawModel
 
         public void setReverse(boolean b) {
             this.reverse = b;
+        }
+
+        public boolean isUndercurl() {
+            return undercurl;
+        }
+
+        public void setUndercurl(boolean undercurl) {
+            this.undercurl = undercurl;
+        }
+
+        public boolean isUnderDouble() {
+            return this.underdouble;
+        }
+
+        public void setUnderDouble(boolean b) {
+            this.underdouble = b;
+        }
+
+        public boolean isNocombine() {
+            return nocombine;
+        }
+
+        public void setNocombine(boolean nocombine) {
+            this.nocombine = nocombine;
+        }
+
+        public int getBlend() {
+            return blend;
+        }
+
+        public void setBlend(int blend) {
+            this.blend = blend;
+        }
+
+        public String getURL() {
+            return this.url;
+        }
+
+        public void setURL(String url) {
+            this.url = url;
         }
     }
 
@@ -142,9 +191,18 @@ public class NeovimDrawModel
     int       mode;
     String    modeName;
     boolean   cursor_busy;
+    String    currentDir;
     NeovimModeInfo[]  modeInfos;
 
     ArrayList<NeovimDrawEventListener>  drawlisteners;
+
+    public String getCurrentDir() {
+        return this.currentDir;
+    }
+
+    public void setCurrentDir(String chdir) {
+        this.currentDir = chdir;
+    }
 
     public void setSize(int cols, int rows) {
         Cell[][]  newcells = new Cell[rows][cols];
@@ -207,7 +265,7 @@ public class NeovimDrawModel
     }
 
     public Hilight getDefaultHilight() {
-        return new Hilight(new Font("Monospaced", Font.PLAIN, 12), foreground, background, special_color);
+        return new Hilight(foreground, background, special_color);
     }
 
     /**
