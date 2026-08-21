@@ -6,7 +6,6 @@ import pureplus.neovimgui.neovimif.NeovimApi;
 import pureplus.neovimgui.neovimif.NeovimDrawEventListener;
 import pureplus.neovimgui.neovimif.NeovimDrawModel;
 import pureplus.neovimgui.neovimif.NeovimModeInfo;
-import pureplus.neovimgui.neovimif.NeovimViewEventListener;
 
 import java.awt.Dimension;
 import java.awt.Point;
@@ -20,14 +19,15 @@ import java.awt.event.ComponentEvent;
 import java.awt.im.InputMethodRequests;
 import java.util.Properties;
 
-public class NeovimView extends JPanel implements NeovimDrawEventListener,NeovimViewEventListener
+public class NeovimView extends JPanel implements NeovimDrawEventListener
 {
     NeovimDrawModel  model;
     NeovimApi        api;
     Dimension      cellSize;
     int            ascent;
     boolean        resize_completed;
-    NeovimInputMethodRequests inputMethodListener;
+    NeovimInputMethodRequests  inputMethodListener;
+    JFrame         frm;
 
 	public NeovimView(NeovimDrawModel model, NeovimApi api) {
         this.model = model;
@@ -68,6 +68,10 @@ public class NeovimView extends JPanel implements NeovimDrawEventListener,Neovim
         resize_completed = false;
 	}
 
+    public void setFrame(JFrame frm) {
+        this.frm = frm;
+    }
+
     public void setConfig(Properties config) {
         String  fontname = config.getProperty("fontname","Monospaced");
         String  fontsize = config.getProperty("fontsize","12");
@@ -86,7 +90,7 @@ public class NeovimView extends JPanel implements NeovimDrawEventListener,Neovim
         int  viewh = cellh * modelSize.height;
         setPreferredSize(new Dimension(vieww, viewh));
     
-        redrawFrame();    
+        redrawFrame();
     }
 
     private void paintCell(Graphics g, NeovimDrawModel.Cell cell, Rectangle cellBounds) {
@@ -215,19 +219,6 @@ public class NeovimView extends JPanel implements NeovimDrawEventListener,Neovim
         }
     }
 
-    JFrame  frm;
-
-    public JFrame createFrame() {
-        frm = new JFrame("NVim");
-        frm.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-        frm.setContentPane(this);
-        frm.setVisible(true);
-        frm.pack();
-
-        return frm;
-    }
-
     public void redrawFrame() {
         SwingUtilities.invokeLater(() -> {
             frm.pack();
@@ -239,16 +230,6 @@ public class NeovimView extends JPanel implements NeovimDrawEventListener,Neovim
     @Override
     public InputMethodRequests getInputMethodRequests() {
         return inputMethodListener;
-    }
-
-    @Override
-    public void titleChanged(String title) {
-        if (frm != null) {
-            if (title.length()==0) {
-                title = "Neovim";
-            }
-            frm.setTitle(title);
-        }
     }
 }
 
