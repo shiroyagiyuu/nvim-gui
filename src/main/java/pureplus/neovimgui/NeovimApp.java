@@ -3,7 +3,6 @@ package pureplus.neovimgui;
 import java.io.OutputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Properties;
 
 import javax.swing.JFrame;
@@ -72,7 +71,18 @@ public class NeovimApp
         }
     }
 
-    public int run(List<String> argList) {
+    public int run(String[] args) {
+        ArrayList<String> argList = new ArrayList<String>();
+
+        argList.add(getExePath());
+        argList.add("--embed");
+        argList.add("--headless");
+        if (args.length > 0) {
+            for (String arg : args) {
+                argList.add(arg);
+            }
+        }
+
         ProcessBuilder pb = new ProcessBuilder(argList);
 
         int  result = -1;
@@ -175,18 +185,7 @@ public class NeovimApp
         NeovimApp  app = new NeovimApp();
         app.loadConfig();        
 
-        ArrayList<String> argList = new ArrayList<String>();
-
-        argList.add(app.getExePath());
-        argList.add("--embed");
-        argList.add("--headless");
-        if (args.length > 0) {
-            for (String arg : args) {
-                argList.add(arg);
-            }
-        }
-
-        int result = app.run(argList);
+        int result = app.run(args);
 
         app.doQuit(result);
     }
