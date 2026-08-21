@@ -143,7 +143,6 @@ public class NeovimApp
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
         frame.setContentPane(view);
-        view.setFrame(frame);
 
         frame.addWindowListener(new java.awt.event.WindowAdapter() {
             @Override

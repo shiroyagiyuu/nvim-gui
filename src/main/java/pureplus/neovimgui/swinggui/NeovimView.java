@@ -26,7 +26,6 @@ public class NeovimView extends JPanel implements NeovimDrawEventListener
     Font           baseFont, boldFont, italicFont, boldItalicFont;
     int            ascent;
     NeovimInputMethodRequests  inputMethodListener;
-    JFrame         frm;
 
 	public NeovimView(NeovimDrawModel model, NeovimApi api) {
         this.model = model;
@@ -62,10 +61,6 @@ public class NeovimView extends JPanel implements NeovimDrawEventListener
             }
         });
 	}
-
-    public void setFrame(JFrame frm) {
-        this.frm = frm;
-    }
 
     public void setFontSet(String fontName, int fontSize) {
         baseFont = new Font(fontName, Font.PLAIN, fontSize);
@@ -194,7 +189,6 @@ public class NeovimView extends JPanel implements NeovimDrawEventListener
 
     @Override
     public void paint(Graphics g) {
-        g.setFont(getFont());
         if (cellSize==null) { calcCellSize(g); }
         setForeground(new Color(model.getForeground()));
         setBackground(new Color(model.getBackground()));
