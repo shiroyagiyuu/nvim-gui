@@ -113,21 +113,27 @@ public class NeovimView extends JPanel implements NeovimDrawEventListener
             NeovimDrawModel.Hilight  hl = model.getHilight(cell.getHilight());
             Color  fgcol,bgcol;
             if (hl != null) {
+                int  fg,bg;
                 if (hl.isReverse()) {
-                    fgcol = hl.getBackground();
-                    bgcol = hl.getForeground();
+                    bg = hl.getForeground();
+                    fg = hl.getBackground();
                 } else {
-                    fgcol = hl.getForeground();
-                    bgcol = hl.getBackground();
+                    fg = hl.getForeground();
+                    bg = hl.getBackground();
                 }
-
-                if (fgcol == null) {
-                    fgcol = model.getForeground();
+                
+                if (bg<0) {
+                    bgcol = getBackground();
+                } else {
+                    bgcol = new Color(bg);
                 }
-                if (bgcol == null) {
-                    bgcol = model.getBackground();
+                    
+                if (fg<0) {
+                    fgcol = getForeground();
+                } else {
+                    fgcol = new Color(fg);
                 }
-
+                
                 if (hl.isBold()) {
                     if (hl.isItalic()) {
                         g.setFont(boldItalicFont);
@@ -140,8 +146,9 @@ public class NeovimView extends JPanel implements NeovimDrawEventListener
                     g.setFont(baseFont);
                 }
             } else {
-                    fgcol = model.getForeground();
-                    bgcol = model.getBackground();
+                fgcol = getForeground();
+                bgcol = getBackground();
+                g.setFont(baseFont);
             }
 
             g.setColor(bgcol);
@@ -189,13 +196,17 @@ public class NeovimView extends JPanel implements NeovimDrawEventListener
     public void paint(Graphics g) {
         g.setFont(getFont());
         if (cellSize==null) { calcCellSize(g); }
+        setForeground(new Color(model.getForeground()));
+        setBackground(new Color(model.getBackground()));
+
         Rectangle  cellBounds = new Rectangle(0, 0, cellSize.width, cellSize.height);
         Dimension  gsize = model.getSize();
 
-        g.setColor(model.getBackground());
+        g.setColor(getBackground());
         Rectangle   clip = g.getClipBounds();
         g.fillRect(clip.x, clip.y, clip.width, clip.height);
 
+        g.setColor(getForeground());
         for (int row = 0; row < gsize.height; row++) {
             cellBounds.y = row * cellBounds.height;
             for (int col = 0; col < gsize.width; col++) {
@@ -207,7 +218,7 @@ public class NeovimView extends JPanel implements NeovimDrawEventListener
             }
         }
 
-        g.setColor(model.getForeground());
+        g.setColor(getForeground());
         inputMethodListener.paint(g);
 
         paintCursor(g);

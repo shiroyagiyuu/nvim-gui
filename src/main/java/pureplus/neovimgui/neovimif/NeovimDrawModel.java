@@ -1,7 +1,6 @@
 package pureplus.neovimgui.neovimif;
 
 import java.awt.Dimension;
-import java.awt.Color;
 import java.util.ArrayList;
 
 public class NeovimDrawModel
@@ -31,9 +30,9 @@ public class NeovimDrawModel
 
     public class Hilight
     {
-        private Color  foreground;
-        private Color  background;
-        private Color  special_color;
+        private int    foreground;
+        private int    background;
+        private int    special_color;
         private boolean bold;
         private boolean italic;
         private boolean reverse;
@@ -45,10 +44,10 @@ public class NeovimDrawModel
         private int     blend;
         private String  url;
 
-        public Hilight(Color fg, Color bg, Color sp) {
-            this.foreground = fg;
-            this.background = bg;
-            this.special_color = sp;
+        public Hilight() {
+            this.foreground = -1;
+            this.background = -1;
+            this.special_color = -1;
             this.bold = false;
             this.italic = false;
             this.reverse = false;
@@ -60,28 +59,28 @@ public class NeovimDrawModel
             this.url = null;
         }
 
-        public Color getForeground() {
+        public int getForeground() {
             return this.foreground;
         }
 
         public void setForeground(int col) {
-            this.foreground = new Color(col);
+            this.foreground = col;
         }
 
-        public Color getBackground() {
+        public int getBackground() {
             return this.background;
         }
 
         public void setBackground(int col) {
-            this.background = new Color(col);
+            this.background = col;
         }
 
-        public Color getSpecialColor() {
+        public int getSpecialColor() {
             return special_color;
         }
 
         public void setSpecialColor(int col) {
-            this.special_color = new Color(col);
+            this.special_color = col;
         }
 
         public boolean isBold() {
@@ -186,7 +185,7 @@ public class NeovimDrawModel
 
     Cell[][]  cells;
     Hilight[] hilights;
-    Color     foreground,background,special_color;
+    int       foreground=-1,background=-1,special_color=-1;
     Cursor    cursor;
     int       mode;
     String    modeName;
@@ -246,7 +245,7 @@ public class NeovimDrawModel
      * get default foreground color
      * @return foreground color
      */
-    public Color getForeground() {
+    public int getForeground() {
         return this.foreground;
     }
 
@@ -254,18 +253,22 @@ public class NeovimDrawModel
      * get default background color
      * @return background color
      */
-    public Color getBackground() {
+    public int getBackground() {
         return this.background;
     }
 
-    public void setDefaultColor(int fgcolor, int bgcolor, int spcolor) {
-        this.foreground = new Color(fgcolor);
-        this.background = new Color(bgcolor);
-        this.special_color = new Color(spcolor);
+    /**
+     * get default special color
+     * @return special color
+     */
+    public int getSpecialColor() {
+        return this.special_color;
     }
 
-    public Hilight getDefaultHilight() {
-        return new Hilight(foreground, background, special_color);
+    public void setDefaultColor(int fgcolor, int bgcolor, int spcolor) {
+        this.foreground = fgcolor;
+        this.background = bgcolor;
+        this.special_color = spcolor;
     }
 
     /**
@@ -289,9 +292,13 @@ public class NeovimDrawModel
      */
     public Hilight getHilight(int id) {
         if (hilights[id] == null) {
-            hilights[id] = getDefaultHilight();
+            hilights[id] = new Hilight();
         }
         return hilights[id];
+    }
+
+    public Hilight getNewHilight() {
+        return new Hilight();
     }
 
     /**

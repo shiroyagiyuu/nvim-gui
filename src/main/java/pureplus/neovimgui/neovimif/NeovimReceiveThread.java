@@ -153,7 +153,7 @@ public class NeovimReceiveThread extends Thread
                 checkParam("hl_attr_define", attr_size, 4);
                 int id = unpacker.unpackInt();
                 int map_size = unpacker.unpackMapHeader();
-                NeovimDrawModel.Hilight hl = dmodel.getDefaultHilight();
+                NeovimDrawModel.Hilight hl = dmodel.getNewHilight();
                 for (int mi=0; mi<map_size; mi++) {
                     String  key = unpacker.unpackString();
                     switch (key) {
